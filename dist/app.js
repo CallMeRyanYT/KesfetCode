@@ -68,7 +68,10 @@ async function runProgram(demo=false){
     if(current){const container=document.querySelector('.program-scroll');if(current.offsetTop<container.scrollTop||current.offsetTop+current.offsetHeight>container.scrollTop+container.clientHeight)container.scrollTo({top:current.offsetTop-60,behavior:'smooth'});}
     await delay(160);if(id!==runId)return;
     state=step(level(),state,action.type);if(state.error)feedback=state.error;
-    updateBoard();audio.play(state.error?'error':state.won?'collect':action.type==='press'?'press':'move');
+    updateBoard();
+    if(state.error)audio.play('error');
+    else if(action.type==='press')audio.play('press');
+    else {audio.play('move');if(state.won)audio.play('collect');}
     await delay(420);if(id!==runId)return;
     if(state.error||state.won)break;
   }
@@ -113,5 +116,3 @@ app.addEventListener('dragend',()=>{dragSource=null;document.querySelector('#pro
 document.addEventListener('keydown',e=>{if(view!=='game'||running||document.querySelector('dialog[open]')||e.ctrlKey||e.altKey||e.metaKey||e.target.closest('select,input,textarea,button,a'))return;const type={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(type){e.preventDefault();addBlock(type);}if(e.code==='Space'){e.preventDefault();runProgram();}});
 window.addEventListener('storage',e=>{if(e.key==='kesfet-code-progress'){progress=normalizeProgress(read(e.key,null));if(view==='menu')render();}});
 render();
-
-

@@ -1,9 +1,9 @@
 // Original, gently voiced sound effects generated locally; no audio downloads.
 // Each note is [frequency, start offset, duration, ending frequency, waveform].
 export const CUES = {
-  block: [[680, 0, .09, 440, 'triangle']],
+  block: [[1800, 0, .04, 550, 'triangle']],
   run: [[440, 0, .13], [660, .10, .18]],
-  move: [[230, 0, .11, 340, 'triangle'], [460, .065, .075, 380, 'sine']],
+  move: [[280, 0, .09, 420, 'triangle'], [660, .06, .085, 440, 'sine']],
   press: [[520, 0, .1, 780, 'triangle'], [1047, .085, .2]],
   error: [[262, 0, .18, 220, 'triangle'], [175, .17, .25, 147, 'triangle']],
   collect: [[784, 0, .14], [988, .09, .15], [1319, .18, .22]],
@@ -14,11 +14,13 @@ export const CUES = {
 };
 
 export class SoundEffects {
-  constructor({ enabled = true, createContext } = {}) {
+  constructor({ enabled = true, createContext, onStatus = () => {}, resumeTimeout = 1500 } = {}) {
     this.enabled = enabled;
     this.context = null;
     this.voices = new Set();
     this.generation = 0;
+    this.onStatus = onStatus;
+    this.resumeTimeout = resumeTimeout;
     this.createContext = createContext || (() => {
       const AudioContext = globalThis.AudioContext || globalThis.webkitAudioContext;
       return AudioContext ? new AudioContext() : null;
@@ -41,14 +43,23 @@ export class SoundEffects {
   }
 
   async play(name) {
-    if (!this.enabled || !Object.hasOwn(CUES, name)) return;
+    if (!this.enabled || !Object.hasOwn(CUES, name)) return false;
     const generation = this.generation;
     try {
-      this.context ??= this.createContext();
-      if (!this.context) return;
+      if (!this.context || this.context.state === 'closed') this.context = this.createContext();
+      if (!this.context) { this.onStatus('unavailable'); return false; }
       // Called from a click before animation starts, satisfying autoplay rules.
-      if (this.context.state === 'suspended') await this.context.resume();
-      if (!this.enabled || generation !== this.generation || this.context.state !== 'running') return;
+      if (this.context.state !== 'running') {
+        let timer;
+        try {
+          await Promise.race([
+            this.context.resume(),
+            new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Audio activation timed out')), this.resumeTimeout); })
+          ]);
+        } finally { clearTimeout(timer); }
+      }
+      if (!this.enabled || generation !== this.generation) return false;
+      if (this.context.state !== 'running') { this.onStatus('blocked'); return false; }
       const start = this.context.currentTime + .01;
       for (const [frequency, offset, duration, ending = frequency, waveform = 'sine'] of CUES[name]) {
         const oscillator = this.context.createOscillator();
@@ -58,8 +69,11 @@ export class SoundEffects {
         oscillator.frequency.setValueAtTime(frequency, at);
         oscillator.frequency.exponentialRampToValueAtTime(ending, at + duration);
         gain.gain.setValueAtTime(.0001, at);
-        gain.gain.exponentialRampToValueAtTime(.07, at + .012);
-        gain.gain.exponentialRampToValueAtTime(.0001, at + duration);
+        // A brief sustain makes the notes audible on laptop and phone speakers.
+        // The old envelope immediately faded from a very low peak.
+        gain.gain.linearRampToValueAtTime(.22, at + .008);
+        gain.gain.setValueAtTime(.22, at + duration * .55);
+        gain.gain.linearRampToValueAtTime(.0001, at + duration);
         oscillator.connect(gain);
         gain.connect(this.context.destination);
         const voice = { oscillator, gain };
@@ -72,8 +86,11 @@ export class SoundEffects {
         oscillator.start(at);
         oscillator.stop(at + duration + .015);
       }
+      this.onStatus('playing');
+      return true;
     } catch {
-      // Sound support is optional; a blocked audio device never interrupts play.
+      if (this.enabled && generation === this.generation) this.onStatus('blocked');
+      return false;
     }
   }
 }

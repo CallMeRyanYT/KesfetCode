@@ -4,7 +4,7 @@ import { SoundEffects, CUES } from '../dist/sounds.js';
 
 function fakeContext() {
   const nodes=[];
-  const parameter=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}});
+  const parameter=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){},linearRampToValueAtTime(){}});
   return {state:'running',currentTime:0,destination:{},nodes,
     createGain(){return {gain:parameter(),connect(){},disconnect(){}};},
     createOscillator(){const node={frequency:parameter(),connect(){},disconnect(){},start(at){this.startAt=at;},stop(at){this.stopAt=at;this.stopped=true;}};nodes.push(node);return node;}
@@ -32,6 +32,20 @@ test('Muting while audio resumes cannot emit delayed sound',async()=>{
   assert.equal(context.nodes.length,0);
 });
 test('Unsupported audio and unknown cues do not interrupt the game',async()=>{
-  const sound=new SoundEffects({createContext:()=>null});await sound.play('move');await sound.play('constructor');
+  const statuses=[];const sound=new SoundEffects({createContext:()=>null,onStatus:status=>statuses.push(status)});await sound.play('move');await sound.play('constructor');
   assert.equal(sound.voices.size,0);
+  assert.deepEqual(statuses,['unavailable']);
+});
+test('Closed and interrupted contexts recover on the next interaction',async()=>{
+  const context=fakeContext();let created=0;
+  const sound=new SoundEffects({createContext:()=>{created++;return context;}});
+  sound.context={state:'closed'};await sound.play('run');assert.equal(created,1);
+  context.state='interrupted';context.resume=async()=>{context.state='running';};
+  assert.equal(await sound.play('move'),true);
+});
+test('Blocked activation reports a retry instead of failing silently',async()=>{
+  const context=fakeContext();context.state='suspended';context.resume=()=>new Promise(()=>{});
+  const statuses=[];const sound=new SoundEffects({createContext:()=>context,onStatus:s=>statuses.push(s),resumeTimeout:5});
+  assert.equal(await sound.play('run'),false);assert.deepEqual(statuses,['blocked']);
+  assert.equal(context.nodes.length,0);
 });
