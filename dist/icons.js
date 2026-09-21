@@ -1,0 +1,32 @@
+const icons = {
+ battery: '<rect x="6" y="4" width="12" height="18" rx="3"/><path d="M10 1h4m-2 6-3 6h6l-3 6"/>',
+ moon: '<path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>',
+ sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/>',
+ arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+ play: '<path d="m8 5 11 7-11 7Z" fill="currentColor" stroke="none"/>',
+ bulb: '<path d="M9 18h6m-5 3h4M8 14a7 7 0 1 1 8 0c-1 1-1 2-1 3H9c0-1 0-2-1-3Z"/>',
+ lock: '<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>',
+ check: '<path d="m5 12 4 4L19 6"/>',
+ grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+ help: '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 1-2 3m0 3h.01"/>',
+ code: '<path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-16-2 20"/>',
+ star: '<path d="m12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"/>',
+ close: '<path d="m6 6 12 12M6 18 18 6"/>',
+ up: '<path d="M12 20V4m-6 6 6-6 6 6"/>',
+ down: '<path d="M12 4v16m-6-6 6 6 6-6"/>',
+ left: '<path d="M20 12H4m6-6-6 6 6 6"/>',
+ right: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
+ reset: '<path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/>',
+ trash: '<path d="M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15m-7 4v7m4-7v7"/>',
+ press: '<path d="M8 13V5a2 2 0 0 1 4 0v6l3-1 5 3-2 8H9l-6-7a2 2 0 0 1 3-2l2 2"/>',
+ repeat: '<path d="m17 2 4 4-4 4M3 11V8a2 2 0 0 1 2-2h16M7 22l-4-4 4-4m14-1v3a2 2 0 0 1-2 2H3"/>',
+ gear: '<path d="m9 3-1 3-3 1-2 4 2 2v4l4 2 3-1 3 1 4-2v-4l2-2-2-4-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/>',
+ sound: '<path d="m11 4-6 5H2v6h3l6 5Zm4 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',
+ mute: '<path d="m11 4-6 5H2v6h3l6 5Zm5 5 6 6m0-6-6 6"/>',
+ pause: '<path d="M8 5v14M16 5v14" stroke-width="5"/>',
+ door: '<path d="M4 21V3h16v18M9 21V7h7v14m-3-7h.01"/>',
+ box: '<path d="m3 7 9-4 9 4v11l-9 4-9-4Zm0 0 9 4 9-4M12 11v11M7 5l9 4"/>',
+ globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>'
+};
+export const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.bulb}</svg>`;
+
