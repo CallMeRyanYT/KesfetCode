@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
+    "build": "node scripts/vendor.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check dist/app.js && node --check dist/engine.js && node --check dist/sounds.js"
+    "check": "node --check dist/app.js && node --check dist/engine.js && node --check dist/sounds.js && node --check dist/factory3d.js && node --check dist/robot-motion.js && node --check dist/robot-face.js && node --check dist/robot-rig.js"
+  },
+  "dependencies": {
+    "three": "0.186.0"
   }
 }
