@@ -19,7 +19,8 @@ No dependency installation, account, database, or API keys are needed.
 - Five progressively unlocked factory puzzles starring the supplied Keşfet Lab robot
 - Battery collection, directional commands, explicit door switches, and repeat-three-times blocks
 - Click-to-add and drag-and-drop blocks, reordering, removal, run, stop, and reset
-- English / Turkish, light / dark themes, optional sound, and browser-local progress
+- English / Turkish, light / dark themes, and browser-local progress
+- Original sounds for blocks, movement, switches, errors, battery pickups, and victories, with a persistent mute toggle
 - Hints and animated demonstrations, with replay to earn additional stars
 - Responsive layouts and keyboard-accessible buttons; arrow keys also add blocks when focus is outside controls
 

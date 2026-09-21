@@ -1,4 +1,5 @@
 import { icon } from './icons.js';
+import { SoundEffects } from './sounds.js';
 import { LEVELS, DIRECTIONS, MAX_BLOCKS, initialState, step, expandProgram, availableActions, normalizeProgress, isUnlocked, completeLevel } from './engine.js';
 
 const app = document.querySelector('#app');
@@ -11,10 +12,11 @@ if(!['en','tr'].includes(lang)){try{lang=localStorage.getItem('kesfet-language')
 let theme=read('kesfet-code-theme','light');
 if(!['light','dark'].includes(theme))theme='light';
 let sound=read('kesfet-code-sound',true)!==false;
+const audio=new SoundEffects({enabled:sound});
 let progress=normalizeProgress(read('kesfet-code-progress',null));
 let view='menu', levelIndex=0, program=[], state=initialState(LEVELS[0]);
 let running=false, runId=0, activeBlock=-1, hintOpen=false, assisted=false, feedback='ready';
-let dragSource=null, audioContext=null, dialogReturnFocus=null;
+let dragSource=null, dialogReturnFocus=null;
 const text=(en,tr)=>lang==='en'?en:tr;
 const localized=pair=>pair[lang==='en'?0:1];
 const level=()=>LEVELS[levelIndex];
@@ -47,21 +49,17 @@ function updateBoard(){
   document.querySelectorAll('.program-item').forEach(el=>el.classList.toggle('executing',Number(el.dataset.index)===activeBlock));
   const message=document.querySelector('#robot-feedback');message.textContent=feedbackText();message.classList.toggle('error',!!state.error||feedback==='incomplete');
 }
-function cancelRun(){runId++;running=false;activeBlock=-1;}
+function cancelRun(){runId++;running=false;activeBlock=-1;audio.cancel();}
 function openLevel(index){if(!isUnlocked(progress,index))return;cancelRun();closeDialog();view='game';levelIndex=index;program=[];state=initialState(level());hintOpen=false;assisted=false;feedback='ready';render();window.scrollTo({top:0,behavior:'instant'});}
 function openMenu(){cancelRun();closeDialog();view='menu';render();window.scrollTo({top:0,behavior:'instant'});}
-function resetRobot(){cancelRun();state=initialState(level());feedback='ready';render();}
-function editProgram(){assisted=false;state=initialState(level());feedback='ready';activeBlock=-1;render();}
-function addBlock(type){if(running||!availableActions(level()).includes(type))return;if(program.length>=MAX_BLOCKS){feedback='limit';updateBoard();return;}program.push(type==='repeat'?{type,direction:'up',count:3}:{type});editProgram();document.querySelector('.program-scroll').scrollTop=100000;beep(420,.045);}
-function beep(freq=500,duration=.09){
-  if(!sound)return;
-  try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();oscillator.type='sine';oscillator.frequency.value=freq;gain.gain.setValueAtTime(.045,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start();oscillator.stop(audioContext.currentTime+duration);}catch{}
-}
+function resetRobot(){cancelRun();state=initialState(level());feedback='ready';render();audio.play('reset');}
+function editProgram(){assisted=false;state=initialState(level());feedback='ready';activeBlock=-1;render();audio.play('block');}
+function addBlock(type){if(running||!availableActions(level()).includes(type))return;if(program.length>=MAX_BLOCKS){feedback='limit';updateBoard();return;}program.push(type==='repeat'?{type,direction:'up',count:3}:{type});editProgram();document.querySelector('.program-scroll').scrollTop=100000;}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function runProgram(demo=false){
   if(running||!program.length)return;
   let instructions;try{instructions=expandProgram(level(),program);}catch{feedback='invalid';updateBoard();return;}
-  const id=++runId;running=true;state=initialState(level());activeBlock=-1;feedback=demo?'demo':'running';render();beep(520,.06);
+  const id=++runId;running=true;state=initialState(level());activeBlock=-1;feedback=demo?'demo':'running';render();audio.play('run');
   await delay(400);
   for(const action of instructions){
     if(id!==runId)return;
@@ -70,14 +68,14 @@ async function runProgram(demo=false){
     if(current){const container=document.querySelector('.program-scroll');if(current.offsetTop<container.scrollTop||current.offsetTop+current.offsetHeight>container.scrollTop+container.clientHeight)container.scrollTo({top:current.offsetTop-60,behavior:'smooth'});}
     await delay(160);if(id!==runId)return;
     state=step(level(),state,action.type);if(state.error)feedback=state.error;
-    updateBoard();beep(state.error?160:action.type==='press'?720:380+state.steps*28,.07);
+    updateBoard();audio.play(state.error?'error':state.won?'collect':action.type==='press'?'press':'move');
     await delay(420);if(id!==runId)return;
     if(state.error||state.won)break;
   }
   running=false;activeBlock=-1;
   if(state.won){
     feedback='success';const score=assisted?1:program.length<=level().target?3:2;
-    progress=completeLevel(progress,levelIndex,score);save('kesfet-code-progress',progress);render();beep(880,.25);showSuccess(score);
+    progress=completeLevel(progress,levelIndex,score);save('kesfet-code-progress',progress);render();audio.play(levelIndex===4?'complete':'success');showSuccess(score);
   }else{if(!state.error)feedback='incomplete';render();announce(feedbackText());}
 }
 function runDemo(){if(running)return;assisted=true;program=level().solution.map(b=>({...b}));hintOpen=false;runProgram(true);}
@@ -97,7 +95,7 @@ app.addEventListener('click',e=>{
     case'menu':e.preventDefault();openMenu();break;
     case'theme':theme=theme==='light'?'dark':'light';save('kesfet-code-theme',theme);render();break;
     case'help':showHelp();break;
-    case'sound':sound=!sound;save('kesfet-code-sound',sound);render();beep();break;
+    case'sound':sound=!sound;audio.setEnabled(sound);save('kesfet-code-sound',sound);render();audio.play('on');break;
     case'run':runProgram();break;
     case'stop':cancelRun();feedback='stopped';render();break;
     case'reset':resetRobot();break;
