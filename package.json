@@ -12,5 +12,9 @@
   },
   "dependencies": {
     "three": "0.186.0"
+  },
+  "devDependencies": {
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3"
   }
 }

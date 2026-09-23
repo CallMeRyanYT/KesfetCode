@@ -18,3 +18,270 @@ html[data-theme=dark] .scene-host{background:#142236}html[data-theme=dark] .scen
 @media(max-width:375px){.site-header{padding:0 10px}.brand strong{font-size:20px}.brand small{font-size:9px}.brand img{width:26px}.header-tools .icon-button{width:27px}.language-switch{margin-left:1px}.language-switch button{padding:6px}.menu-heading h1{font-size:27px}.menu-page,.game-page{padding-left:12px;padding-right:12px}.lobby-tools>span{display:none}.back-button{font-size:12px}.level-tracker{gap:8px}.tracker-dot{width:24px;height:24px}.tracker-dot:not(:last-child):after{left:25px;width:5px}.palette-block{font-size:13px}}
 @media(min-width:981px) and (max-height:850px){.site-header{height:74px}.menu-page{padding-top:22px}.menu-heading{margin-bottom:20px}.menu-heading h1{font-size:33px}.menu-layout{gap:24px}.lobby-scene{min-height:310px}.level-card{min-height:79px;padding-top:10px;padding-bottom:10px}.level-card.next-mission{padding-top:9px;padding-bottom:9px}.lobby-bottom{padding-top:18px}.game-page{padding-top:12px}.mission-heading{margin:12px 0 17px}.mission-heading h1{font-size:28px}.stage{min-height:470px}.scene-wrap,.game-scene{min-height:315px}.program-scroll{height:285px}.panel{padding-top:14px;padding-bottom:14px}.stage{padding:0}.block-palette{gap:14px}.panel-description{margin-bottom:18px}.game-page footer{padding-bottom:14px}.hint-bar{margin-top:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Campaign navigation, objective HUD, and chapter lock states. */
+.chapter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 25px}.chapter-card{display:flex;align-items:center;gap:13px;min-height:142px;padding:17px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}.chapter-card.chapter-locked{background:var(--surface-alt);opacity:.7}.chapter-mark{font-size:28px;align-self:flex-start}.chapter-copy{flex:1;min-width:0}.chapter-copy h2{font-size:19px;margin:4px 0 6px}.chapter-copy p{font-size:12px;line-height:1.55;color:var(--muted)}.chapter-lock,.chapter-ready{display:flex;align-items:center;gap:5px;font-size:11px;margin-top:9px;color:var(--muted)}.chapter-lock .icon{width:14px;height:14px}.chapter-open>.icon{color:var(--muted);width:22px}.chapter-card>.primary{padding:9px 11px;font-size:12px;white-space:nowrap}.mission-hud{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;pointer-events:none}.hud-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:8px;background:#ffffffdf;border:1px solid #fff9;color:#516a82;font-size:11px;font-weight:700;backdrop-filter:blur(10px)}.energy-chip>.icon{width:14px;height:18px;color:#e68b20}.energy-value{font-family:Outfit,sans-serif;font-size:16px;color:#273a50}.energy-value small{font-size:10px;color:var(--muted)}.energy-segments{display:flex;gap:2px;margin-left:2px}.energy-segments i{display:block;width:5px;height:10px;border-radius:2px;background:#c9d3dc}.energy-segments i.filled{background:#65d8b2}.energy-chip:has(.energy-value:first-child){}.scene-topline{align-items:flex-start}.chapter-card .icon{flex-shrink:0}html[data-theme=dark] .chapter-card{background:var(--surface)}html[data-theme=dark] .chapter-card.chapter-locked{background:var(--surface-alt)}html[data-theme=dark] .hud-chip{background:#1b2d42e8;border-color:#43546d70;color:#aec0d5}html[data-theme=dark] .energy-value{color:#e6f0fa}
+.debug-banner{margin:-12px 0 20px;padding:9px 13px;border:1px dashed var(--orange);border-radius:9px;background:var(--orange-soft);color:var(--orange);font-size:12px;font-weight:700;text-align:center}
+@media(max-width:980px){.chapter-grid{grid-template-columns:1fr}.chapter-card{min-height:108px}.chapter-card>.primary{margin-left:auto}.mission-hud{justify-content:flex-start}}
+
+/* Lesson view: a bright, block-based classroom layout inspired by beginner coding tools. */
+html[data-view=game] .site-header{background:#5145cc;border-bottom-color:#4035ad;color:#fff}
+html[data-view=game] .site-header .brand strong,html[data-view=game] .site-header .brand strong span,html[data-view=game] .site-header .brand small,html[data-view=game] .site-header .nav-link,html[data-view=game] .site-header .header-tools .icon-button{color:#fff}
+html[data-view=game] .site-header .nav-link.active:after{background:#ffd34d}
+html[data-view=game] .site-header .language-switch{background:#4035ad;border-color:#756de0}
+html[data-view=game] .site-header .language-switch button{color:#e9e7ff}
+html[data-view=game] .site-header .language-switch .selected{background:#fff;color:#5145cc}
+.lesson-coach{margin:0 0 18px;border-radius:13px;background:#303239;color:#fff;overflow:hidden;box-shadow:0 8px 24px #1e253218}
+.lesson-coach-head{display:flex;align-items:center;gap:12px;padding:14px 18px 12px;border-bottom:1px solid #51535c}
+.lesson-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#5145cc;font-size:23px;flex-shrink:0}
+.lesson-coach .eyebrow{color:#c7c8d3;font-size:10px;letter-spacing:1.4px}
+.lesson-coach h2{color:#fff;font-size:19px;letter-spacing:-.2px;margin-top:3px}
+.lesson-help{margin-left:auto;background:#fff;border-color:#fff;color:#303239;white-space:nowrap;padding:8px 12px;font-size:12px}
+.lesson-help:hover{background:#f0efff;color:#5145cc;border-color:#fff}
+.lesson-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:0;list-style:none;background:#3a3b43}
+.lesson-steps li{display:flex;gap:9px;align-items:flex-start;padding:13px 16px;min-height:64px;border-right:1px solid #51535c;font-size:13px;line-height:1.45;color:#f6f6f8}
+.lesson-steps li:last-child{border-right:0}
+.lesson-steps b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffd34d;color:#3b3420;font-size:12px;flex-shrink:0}
+.robot-speech{position:absolute;z-index:3;left:22px;bottom:58px;display:flex;align-items:flex-start;gap:8px;max-width:min(370px,calc(100% - 44px));padding:10px 14px 11px;border-radius:12px;background:#fff;color:#27364b;box-shadow:0 8px 22px #1b2b3b30;border:2px solid #fff;font-size:13px;line-height:1.4;transform-origin:left bottom}
+.robot-speech:after{display:none}
+.robot-speech-name{color:#5145cc;font-weight:800;font-size:10px;letter-spacing:1px;padding-top:2px;white-space:nowrap}
+.robot-speech-name{flex:0 0 auto}
+.robot-speech #robot-speech-text{display:block;min-width:0;flex:1 1 auto;overflow-wrap:anywhere;white-space:normal}
+.robot-speech.is-speaking{animation:speech-pop .24s ease-out}
+.robot-feedback{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border:2px solid var(--orange);border-radius:10px;background:var(--orange-soft);color:var(--text);font-size:15px;font-weight:700;line-height:1.45;box-shadow:0 4px 14px #f77d2218}
+.robot-feedback.error{color:#a94b21;border-color:#df6c2d;background:#fff0e8}
+.chapter-age{display:inline-flex;margin-top:4px;padding:3px 8px;border-radius:999px;background:var(--orange-soft);color:var(--orange);font-weight:700;font-size:11px;letter-spacing:.2px}
+.chapter-tools{color:var(--text);font-size:11px;font-weight:700}
+.chapter-card.chapter-open{cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+.chapter-card.chapter-open:hover,.chapter-card.chapter-open:focus-within{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 8px 22px #23364b16}
+.chapter-card.chapter-open[data-chapter]:focus-visible{outline:3px solid #2d97e8;outline-offset:3px}
+.chapter-preview{padding:24px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(135deg,var(--surface),var(--orange-soft));box-shadow:var(--shadow)}
+.chapter-preview h2{font-size:27px;margin:8px 0 7px}
+.chapter-preview p{color:var(--muted);font-size:14px;line-height:1.65;max-width:620px;margin-bottom:15px}
+.chapter-preview .eyebrow{color:var(--orange)}
+.code-block.forward{background:#e4ddfa;color:#6850a1;border-color:#c7b7e9;border-bottom-color:#a895cf}.code-block.forward:after{background:#a895cf}.code-block.turnRight,.code-block.turnLeft{background:#dff5ef;color:#287c6f;border-color:#adddce;border-bottom-color:#80c0b0}.code-block.turnRight:after,.code-block.turnLeft:after{background:#80c0b0}
+@keyframes speech-pop{from{opacity:.55;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+@media(min-width:981px){
+  .game-layout{grid-template-columns:minmax(330px,1.08fr) 195px minmax(360px,1.25fr);grid-template-rows:auto 1fr;align-items:stretch}
+  .game-layout>.stage{grid-column:1;grid-row:1 / 3;min-height:560px}
+  .game-layout>.toolbox{grid-column:2;grid-row:1 / 3}
+  .game-layout>.workspace{grid-column:3;grid-row:1 / 3}
+}
+@media(max-width:980px){.lesson-steps{grid-template-columns:1fr}.lesson-steps li{border-right:0;border-bottom:1px solid #51535c}.lesson-steps li:last-child{border-bottom:0}.robot-speech{left:14px;bottom:54px;max-width:calc(100% - 28px)}}
+@media(max-width:700px){.lesson-coach-head{padding:12px 13px}.lesson-coach h2{font-size:17px}.lesson-help{padding:7px 9px}.lesson-steps li{padding:11px 13px;font-size:12px}.robot-speech{font-size:12px;bottom:50px}.robot-feedback{font-size:14px}}
+html[data-theme=dark] .robot-speech{background:#f5f7fb;color:#27364b;border-color:#fff}html[data-theme=dark] .robot-speech:after{background:#f5f7fb;border-color:#f5f7fb}html[data-theme=dark] .robot-feedback.error{color:#ffd0b5;background:#5b3024;border-color:#d77a50}
+
+/* Reference-style lesson workspace: the scene stays in a narrow left rail and
+   the teaching, palette, and workspace content share the wider right rail. */
+@media(min-width:981px){
+  html[data-view=game]{background:#f2f3f5}
+  html[data-view=game] body{background:#f2f3f5}
+  html[data-view=game] .site-header{height:64px;padding:0 24px}
+  html[data-view=game] .site-header .brand img{width:31px;height:45px}
+  html[data-view=game] .site-header .brand strong{font-size:23px}
+  html[data-view=game] .site-header .brand small{font-size:10px}
+  .game-page{max-width:none;margin:0;padding:0;background:#f2f3f5}
+  .game-heading{height:58px;min-height:58px;padding:0 18px;background:#5145cc;color:#fff;border-bottom:1px solid #3d34a9}
+  .game-heading .back-button,.game-heading .game-edition{color:#fff}
+  .game-heading .back-button:hover{color:#ffd34d}
+  .game-heading .game-edition b{background:#ff8a24;border-color:#ff8a24;color:#fff}
+  .game-lesson-title{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:260px;line-height:1.2;color:#fff}
+  .game-lesson-title span{font-size:13px;font-weight:500;letter-spacing:.2px}
+  .game-lesson-title strong{font-family:'Outfit',sans-serif;font-size:18px;font-weight:600}
+  .game-heading .level-tracker{margin-left:auto;margin-right:6px}
+  .game-heading .tracker-dot{background:#fff;color:#5145cc;box-shadow:none}
+  .game-heading .tracker-dot.current{background:#ffd34d;color:#3d34a9;box-shadow:0 0 0 3px #ffffff40}
+  .game-heading .tracker-dot.done:not(.current){background:#94e5ba;color:#194c3a}
+  .game-heading .tracker-dot:not(:last-child):after{background:#ffffff80}
+  .lesson-layout{display:grid!important;grid-template-columns:330px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;gap:0!important;align-items:stretch!important;min-height:calc(100vh - 122px);margin:0!important}
+  .lesson-layout>.stage{grid-column:1!important;grid-row:1!important;min-height:calc(100vh - 122px)!important;height:calc(100vh - 122px);border:0;border-right:1px solid #c8cdd3;border-radius:0;box-shadow:none;background:#edf0f2}
+  .lesson-layout>.stage>.panel-title{display:none}
+  .lesson-layout>.stage>.scene-wrap{min-height:0;flex:1;background:#dbe1e7}
+  .lesson-layout>.stage .game-scene{min-height:0;height:100%}
+  .lesson-layout>.stage .scene-topline{left:10px;right:10px;top:10px}
+  .lesson-layout>.stage .scene-bottomline{left:10px;right:10px;bottom:10px}
+  .lesson-layout>.stage .scene-bottomline>span{display:none}
+  .lesson-layout>.stage .scene-tag{font-size:9px;padding:5px 7px}
+  .lesson-layout>.stage .hud-chip{padding:4px 6px;font-size:10px}
+  .lesson-layout>.stage .robot-speech{left:12px;bottom:42px;max-width:calc(100% - 24px);font-size:11px;padding:8px 10px}
+  .stage-controls{display:flex;gap:8px;padding:8px 12px;background:#edf0f2;border-top:1px solid #c8cdd3}
+  .stage-controls .primary,.stage-controls .secondary{flex:1;min-height:42px;border-radius:4px;padding:9px 8px;font-size:13px}
+  .stage-controls .secondary{background:#fff;color:#27364b;border:1px solid #8a929b;box-shadow:none}
+  .lesson-layout>.stage>.stage-bottom{padding:7px 10px;background:#edf0f2;border-top:0}
+  .lesson-layout>.stage .board-legend{display:none}
+  .lesson-layout>.stage .robot-feedback{min-height:32px;padding:7px 8px;border:0;border-radius:4px;background:#fff3e9;color:#c65f20;box-shadow:none;font-size:11px;font-weight:600}
+  .lesson-content{grid-column:2;grid-row:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff}
+  .lesson-content .lesson-coach{margin:0;border-radius:0;background:#d5d7da;color:#17191c;box-shadow:none}
+  .lesson-instructions-bar{height:38px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;background:#111;color:#fff}
+  .lesson-instructions-bar h2{font-family:'DM Sans',sans-serif;font-size:15px;letter-spacing:.1px;color:#fff}
+  .lesson-instructions-bar span{font-size:11px;color:#d7d7d7;letter-spacing:.4px}
+  .lesson-coach-body{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:start;gap:10px;min-height:104px;padding:11px 14px 12px}
+  .lesson-coach-body .lesson-avatar{width:54px;height:54px;background:#5145cc;border:3px solid #fff;font-size:28px;box-shadow:0 2px 4px #0002}
+  .lesson-bubble{position:relative;min-height:56px;padding:12px 17px;background:#fff;border-radius:14px;color:#17191c;box-shadow:0 1px 2px #0001;font-size:14px;line-height:1.4}
+  .lesson-bubble:before{content:'';position:absolute;left:-12px;top:20px;border-width:9px 12px 9px 0;border-style:solid;border-color:transparent #fff transparent transparent}
+  .lesson-bubble .robot-speech-name{display:block;margin-bottom:2px;color:#5145cc;font-size:9px}
+  .lesson-bubble p{margin:0}
+  .lesson-coach-body .lesson-help{align-self:start;margin:0 0 0 4px;padding:8px 10px;border-radius:4px;background:#fff;color:#333;border-color:#fff;font-size:11px}
+  .lesson-steps{grid-template-columns:repeat(3,minmax(0,1fr));background:#c3c5c8;color:#25272a}
+  .lesson-steps li{min-height:58px;padding:9px 12px;border-right:1px solid #a9adb1;color:#25272a;font-size:11px;line-height:1.35}
+  .lesson-steps li:last-child{border-right:0}
+  .lesson-steps b{width:20px;height:20px;background:#ffd34d;color:#3d3420;font-size:11px}
+  .lesson-toolbar{height:38px;display:grid;grid-template-columns:140px minmax(0,1fr) auto;align-items:center;background:#111;color:#fff;border-top:1px solid #252525}
+  .lesson-toolbar-label{display:flex;align-items:center;height:100%;padding:0 17px;border-right:1px solid #424242;font-size:13px}
+  .lesson-toolbar strong{justify-self:center;font-size:12px;font-weight:500;letter-spacing:.15px}
+  .lesson-toolbar-actions{display:flex;align-items:center;gap:4px;padding-right:6px}
+  .lesson-toolbar .secondary{padding:5px 8px;border:1px solid #ddd;border-radius:3px;background:#fff;color:#222;font-size:10px;box-shadow:none}
+  .lesson-toolbar .secondary .icon{width:12px;height:12px}
+  .lesson-workspace{display:grid;grid-template-columns:140px minmax(0,1fr);flex:1;min-height:0;background:#fff}
+  .lesson-workspace>.toolbox{grid-column:1;grid-row:1;min-height:0;padding:10px;border:0;border-right:1px solid #d4d8dc;border-radius:0;background:#e7e9eb;box-shadow:none}
+  .lesson-workspace>.toolbox>.panel-title,.lesson-workspace>.toolbox>.panel-description,.lesson-workspace>.toolbox>.toolbox-note{display:none}
+  .lesson-workspace .block-palette{display:flex;flex-direction:column;gap:12px;margin:0}
+  .lesson-workspace .palette-block{min-height:56px;padding:9px 8px;border-radius:5px;background:#08aabd;color:#fff;border-color:#078d9d;border-bottom-color:#067884;box-shadow:none;font-size:13px}
+  .lesson-workspace .palette-block:after{background:#067884}
+  .lesson-workspace .palette-block .icon{width:22px;height:22px}
+  .lesson-workspace .palette-block .block-plus{display:none}
+  .lesson-workspace>.workspace{grid-column:2;grid-row:1;min-height:0;padding:0 14px 12px;border:0;border-radius:0;box-shadow:none;background:#fff}
+  .lesson-workspace>.workspace>.panel-title,.lesson-workspace>.workspace>.workspace-bottom,.lesson-workspace>.workspace>.run-button{display:none}
+  .lesson-workspace .program-scroll{height:auto;min-height:0;margin-top:0;padding:10px 4px 14px;border-radius:0;flex:1;background-size:14px 14px}
+  .lesson-workspace .start-block{margin:0 55px 13px 12px;border-radius:4px 4px 2px 2px;padding:11px 10px;font-size:12px}
+  .lesson-workspace .program-item{margin-bottom:11px}
+  .lesson-workspace .program-item>.code-block{padding:10px;min-height:45px;border-radius:4px;font-size:13px}
+  .lesson-workspace .drop-target{margin:10px 55px 0 12px;font-size:11px}
+  .game-page>.hint-bar,.game-page>.hint-content,.game-page>footer{display:none}
+}
+
+@media(max-width:980px){
+  .lesson-layout{display:flex!important;flex-direction:column!important;min-height:0!important;margin:0!important}
+  .lesson-layout>.stage{order:0;height:auto;min-height:0!important}
+  .lesson-content{order:1}
+  .lesson-toolbar{grid-template-columns:125px minmax(0,1fr);height:auto;min-height:40px}
+  .lesson-toolbar-actions{grid-column:1 / -1;justify-content:flex-end;padding:5px 8px;border-top:1px solid #424242}
+  .lesson-workspace{grid-template-columns:180px minmax(0,1fr);min-height:500px}
+}
+
+@media(max-width:700px){
+  .lesson-coach-body{grid-template-columns:48px minmax(0,1fr);padding:10px}
+  .lesson-coach-body .lesson-avatar{width:42px;height:42px;font-size:22px}
+  .lesson-coach-body .lesson-help{grid-column:2;justify-self:start;margin:0}
+  .lesson-bubble{font-size:12px;padding:10px 13px}
+  .lesson-toolbar strong{font-size:11px}
+  .lesson-workspace{grid-template-columns:145px minmax(0,1fr)}
+}
+
+@media(min-width:981px){
+  /* The purple site header is the single lesson toolbar on desktop. Keeping
+     the mission content directly beneath it matches the reference workspace. */
+  html[data-view=game] .game-heading{display:none}
+  .lesson-layout{min-height:calc(100vh - 64px)}
+  .lesson-layout>.stage{min-height:calc(100vh - 64px)!important;height:calc(100vh - 64px)}
+}
+
+@media(min-width:701px) and (max-width:980px){
+  /* Keep the reference's two-column content space in the in-app browser too;
+     the compact phone layout begins below 700px. */
+  html[data-view=game] .site-header{height:60px;padding:0 14px}
+  html[data-view=game] .site-header .brand img{width:30px;height:43px}
+  html[data-view=game] .site-header .brand strong{font-size:21px}
+  .game-page{max-width:none;margin:0;padding:0;background:#f2f3f5}
+  .game-heading{display:none}
+  .lesson-layout{display:grid!important;grid-template-columns:245px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;gap:0!important;min-height:calc(100vh - 60px)!important;margin:0!important}
+  .lesson-layout>.stage{grid-column:1!important;grid-row:1!important;order:0;height:calc(100vh - 60px);min-height:calc(100vh - 60px)!important;border:0;border-right:1px solid #c8cdd3;border-radius:0;box-shadow:none;background:#edf0f2}
+  .lesson-layout>.stage>.panel-title{display:none}
+  .lesson-layout>.stage>.scene-wrap{min-height:0;flex:1}
+  .lesson-layout>.stage .game-scene{min-height:0;height:100%}
+  .lesson-layout>.stage .robot-speech{left:9px;right:9px;bottom:56px;max-width:none;box-sizing:border-box;font-size:10px;padding:7px 8px;gap:6px}
+  .lesson-layout>.stage .board-legend{display:none}
+  .lesson-layout>.stage>.stage-bottom{padding:6px 8px;background:#edf0f2;border-top:0}
+  .lesson-layout>.stage .robot-feedback{padding:6px 7px;font-size:10px;border:0;box-shadow:none}
+  .stage-controls{padding:6px 8px}
+  .stage-controls .primary,.stage-controls .secondary{min-height:37px;padding:7px 5px;font-size:11px;border-radius:4px}
+  .lesson-content{grid-column:2;grid-row:1;order:0;display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff}
+  .lesson-content .lesson-coach{margin:0;border-radius:0;background:#d5d7da;color:#17191c;box-shadow:none}
+  .lesson-instructions-bar{height:32px;padding:0 10px;background:#111;color:#fff}
+  .lesson-instructions-bar h2{font-size:13px;color:#fff}
+  .lesson-instructions-bar span{font-size:9px}
+  .lesson-coach-body{grid-template-columns:44px minmax(0,1fr) auto;min-height:86px;gap:7px;padding:8px}
+  .lesson-coach-body .lesson-avatar{width:38px;height:38px;font-size:20px;border-width:2px}
+  .lesson-bubble{min-height:45px;padding:8px 10px;border-radius:9px;font-size:11px}
+  .lesson-bubble:before{left:-8px;top:15px;border-width:6px 8px 6px 0}
+  .lesson-bubble .robot-speech-name{font-size:8px}
+  .lesson-coach-body .lesson-help{padding:6px 7px;font-size:9px;border-radius:3px}
+  .lesson-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lesson-steps li{min-height:48px;padding:6px 7px;font-size:9px;gap:5px}
+  .lesson-steps b{width:16px;height:16px;font-size:9px}
+  .lesson-toolbar{height:32px;grid-template-columns:94px minmax(0,1fr) auto}
+  .lesson-toolbar-label{padding:0 9px;font-size:11px}
+  .lesson-toolbar strong{font-size:9px}
+  .lesson-toolbar-actions{gap:2px;padding-right:3px}
+  .lesson-toolbar .secondary{padding:4px 5px;font-size:8px}
+  .lesson-workspace{grid-column:1 / -1;grid-template-columns:108px minmax(0,1fr);min-height:0;flex:1}
+  .lesson-workspace>.toolbox{grid-column:1;grid-row:1;padding:7px;border:0;border-right:1px solid #d4d8dc;border-radius:0;background:#e7e9eb}
+  .lesson-workspace>.toolbox>.panel-title,.lesson-workspace>.toolbox>.panel-description,.lesson-workspace>.toolbox>.toolbox-note{display:none}
+  .lesson-workspace .block-palette{display:flex;flex-direction:column;gap:7px}
+  .lesson-workspace .palette-block{min-height:44px;padding:7px 5px;border-radius:4px;font-size:10px}
+  .lesson-workspace .palette-block .icon{width:17px;height:17px}
+  .lesson-workspace .palette-block .block-plus{display:none}
+  .lesson-workspace>.workspace{grid-column:2;grid-row:1;padding:0 8px 8px;border:0;border-radius:0;box-shadow:none}
+  .lesson-workspace>.workspace>.panel-title,.lesson-workspace>.workspace>.workspace-bottom,.lesson-workspace>.workspace>.run-button{display:none}
+  .lesson-workspace .program-scroll{height:auto;min-height:0;margin-top:0;padding:7px 2px 9px;flex:1;background-size:12px 12px}
+  .lesson-workspace .start-block{margin:0 22px 8px 5px;padding:8px 7px;font-size:9px}
+  .lesson-workspace .program-item{margin-bottom:7px}
+  .lesson-workspace .program-item>.code-block{min-height:35px;padding:7px;font-size:10px;border-radius:3px}
+  .lesson-workspace .drop-target{margin:7px 22px 0 5px;padding:7px 2px;font-size:9px}
+  .game-page>.hint-bar,.game-page>.hint-content,.game-page>footer{display:none}
+}
+
+/* The reference-style lesson layout uses a few deliberately explicit light
+   surfaces above. Give each of those surfaces a dark counterpart so the
+   theme toggle changes the whole lesson, not only the global header. */
+html[data-theme=dark] .game-page{background:#111c2c;color:#e7edf6}
+html[data-theme=dark] .lesson-layout>.stage{background:#142236;border-right-color:#314155}
+html[data-theme=dark] .lesson-layout>.stage>.scene-wrap{background:#142236}
+html[data-theme=dark] .stage-controls,html[data-theme=dark] .lesson-layout>.stage>.stage-bottom{background:#1b2a3e;border-color:#314155}
+html[data-theme=dark] .stage-controls .secondary{background:#23344b;color:#e7edf6;border-color:#4d6078}
+html[data-theme=dark] .lesson-layout>.stage .robot-feedback{background:#3e3027;color:#ffd1ae;border-color:#7b5135}
+html[data-theme=dark] .lesson-content{background:#111c2c}
+html[data-theme=dark] .lesson-content .lesson-coach{background:#273548;color:#e7edf6}
+html[data-theme=dark] .lesson-instructions-bar{background:#070b12}
+html[data-theme=dark] .lesson-coach-body{background:#273548}
+html[data-theme=dark] .lesson-bubble{background:#1b2a3e;color:#e7edf6;box-shadow:0 2px 6px #050d1940}
+html[data-theme=dark] .lesson-bubble:before{border-color:transparent #1b2a3e transparent transparent}
+html[data-theme=dark] .lesson-bubble .robot-speech-name{color:#b9b1ff}
+html[data-theme=dark] .lesson-coach-body .lesson-help{background:#1b2a3e;color:#e7edf6;border-color:#52647c}
+html[data-theme=dark] .lesson-steps{background:#202d40}
+html[data-theme=dark] .lesson-steps li{border-color:#3b4b61;color:#e7edf6}
+html[data-theme=dark] .lesson-toolbar{background:#070b12;border-color:#1f2a39}
+html[data-theme=dark] .lesson-toolbar-label{border-color:#3b4655}
+html[data-theme=dark] .lesson-toolbar .secondary{background:#23344b;color:#e7edf6;border-color:#52647c}
+html[data-theme=dark] .lesson-workspace{background:#111c2c}
+html[data-theme=dark] .lesson-workspace>.toolbox{background:#1b2a3e;border-color:#314155}
+html[data-theme=dark] .lesson-workspace>.workspace{background:#111c2c}
+html[data-theme=dark] .lesson-workspace .program-scroll{background-color:#111c2c}
+html[data-theme=dark] .lesson-workspace .drop-target{border-color:#52647c;color:#9baec5}
+html[data-theme=dark] .lesson-workspace .empty-program{color:#9baec5}
+html[data-theme=dark] .robot-speech{background:#1b2a3e;color:#e7edf6;border-color:#52647c}
+html[data-theme=dark] .robot-speech:after{background:#1b2a3e;border-color:#52647c}
+html[data-theme=dark] .robot-speech-name{color:#b9b1ff}
+
+/* Connected puzzle-block affordances and a precise insertion guide for drag
+   and drop. The orange guide follows the pointer between any two steps. */
+.program-scroll{position:relative}
+.program-scroll.drag-over{background-color:var(--orange-soft);outline:2px dashed var(--orange);outline-offset:-3px}
+.program-drop-indicator{position:absolute;left:25px;right:56px;height:4px;border-radius:4px;background:var(--orange);box-shadow:0 0 0 2px #fff8,0 2px 8px #f77d2255;z-index:8;pointer-events:none}
+.program-drop-indicator:before,.program-drop-indicator:after{content:'';position:absolute;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 2px #fff8}
+.program-drop-indicator:before{left:-6px}.program-drop-indicator:after{right:-6px}
+.program-item>.code-block[data-connector=step]::before{content:'';position:absolute;left:20px;top:-8px;width:21px;height:8px;border-radius:4px 4px 0 0;background:#99bddf;z-index:1}
+.program-item:first-child>.code-block[data-connector=step]::before{background:#d56316}
+html[data-theme=dark] .program-drop-indicator{box-shadow:0 0 0 2px #111c2c,0 2px 8px #f77d2266}
+html[data-theme=dark] .program-drop-indicator:before,html[data-theme=dark] .program-drop-indicator:after{box-shadow:0 0 0 2px #111c2c}
+html[data-theme=dark] .program-item>.code-block[data-connector=step]::before{background:#172f4a}
+html[data-theme=dark] .program-item:first-child>.code-block[data-connector=step]::before{background:#d56316}
+.sound-note{position:relative;display:inline-flex;align-items:center;justify-content:center;width:26px;height:28px;font-size:25px;line-height:1}.sound-note.is-muted:after{content:'';position:absolute;left:-2px;top:13px;width:31px;height:3px;border-radius:2px;background:currentColor;transform:rotate(-45deg);box-shadow:0 0 0 2px #08213a}
+
+.success-controls{display:flex;justify-content:center;gap:24px;margin-top:25px}
+.success-controls button{width:94px;height:86px;border-radius:18px;display:grid;place-items:center;border:1px solid #ffffff60;border-bottom-width:5px;transition:transform .15s,filter .15s}
+.success-controls .success-replay{background:linear-gradient(#ffe25a,#ffc21c);border-bottom-color:#bf8409;color:#fff}
+.success-controls .success-next{background:linear-gradient(#39df73,#0aaf4a);border-bottom-color:#087c35;color:#fff}
+.success-controls .icon{width:40px;height:40px;stroke-width:3}
+.success-controls button:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.success-controls button:focus-visible{outline:3px solid var(--text);outline-offset:4px}

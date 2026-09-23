@@ -27,6 +27,11 @@ const icons = {
  door: '<path d="M4 21V3h16v18M9 21V7h7v14m-3-7h.01"/>',
  box: '<path d="m3 7 9-4 9 4v11l-9 4-9-4Zm0 0 9 4 9-4M12 11v11M7 5l9 4"/>',
  globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>'
+ ,forward: '<path d="M12 20V4m-6 6 6-6 6 6"/>'
+ ,turnRight: '<path d="M5 5h8a6 6 0 0 1 6 6v8m0 0-4-4m4 4 4-4"/>'
+ ,turnLeft: '<path d="M19 5h-8a6 6 0 0 0-6 6v8m0 0 4-4m-4 4-4-4"/>'
+ ,launch: '<path d="M12 3c3 2 5 5 5 9l-5 7-5-7c0-4 2-7 5-9Z"/><path d="M9 21h6M10 12h4"/>'
+ ,rocket: '<path d="M12 3c3 2 5 5 5 9l-5 7-5-7c0-4 2-7 5-9Z"/><path d="M9 19 7 22m8-3 2 3M10 11h4"/>'
 };
 export const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.bulb}</svg>`;
 
