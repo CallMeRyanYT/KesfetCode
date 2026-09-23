@@ -80,4 +80,4 @@ html[data-scenery-motion=on] .river-current path{animation:river-flow 3s linear 
 .planet-art .building-signs{position:absolute;top:32%;left:0;transform:translateY(-32%);width:100%;height:auto;pointer-events:none;z-index:2}
 
 .map-building-signs{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.map-building-signs,.planet-art .building-signs{opacity:.8;mix-blend-mode:multiply}
+.map-building-signs,.planet-art .building-signs{opacity:1}

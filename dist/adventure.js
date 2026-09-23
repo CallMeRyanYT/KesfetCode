@@ -3,10 +3,10 @@ import { CHAPTERS, LEVELS, WORLDS } from './levels.js';
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // One painted sign per illustration, aligned with a single building's fascia.
 function buildingSigns(chapter, map = false) {
-  const sign = map ? [113,1268,51,-8,7.4]
-    : [[239,310,55,-1,7.6],[207,373,57,-2,7.6],[196,350,77,1,8]][chapter];
+  const sign = map ? [69,1273,124,-8,22]
+    : [[214,310,105,-1,20],[191,376,112,-2,20],[154,349,150,1,22]][chapter];
   const [x,y,width,angle,size] = sign;
-  return `<svg class="${map?'map-building-signs':'building-signs'}" viewBox="0 0 ${map?'1024 1536':'512 1024'}" preserveAspectRatio="none" aria-hidden="true"><g transform="translate(${x} ${y}) rotate(${angle}) skewX(-5)"><text x="0" y="0" textLength="${width}" lengthAdjust="spacingAndGlyphs" font-family="Arial,sans-serif" font-weight="600" font-size="${size}" fill="${chapter===1?'#695347':'#405460'}" letter-spacing=".35">KEŞFET LAB</text></g></svg>`;
+  return `<svg class="${map?'map-building-signs':'building-signs'}" viewBox="0 0 ${map?'1024 1536':'512 1024'}" preserveAspectRatio="none" aria-hidden="true"><g transform="translate(${x} ${y}) rotate(${angle}) skewX(-5)"><rect x="-4" y="${-size}" width="${width+8}" height="${size+5}" rx="2" fill="${chapter===1?'#ecd0b5':'#dfe7e8'}"/><text x="0" y="0" textLength="${width}" lengthAdjust="spacingAndGlyphs" font-family="Arial,sans-serif" font-weight="800" font-size="${size}"><tspan fill="#111111">Kesfet</tspan><tspan fill="#f36b08"> lab</tspan></text></g></svg>`;
 }
 
 function livingScenery(chapter=0, card=false) {
