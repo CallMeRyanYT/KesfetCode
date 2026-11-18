@@ -9,6 +9,10 @@ import { PUZZLE_GEOMETRY, CONNECTED_STACK, createPuzzleWorkspace, puzzleBlockCou
 import { AmbientMusic } from './ambient.js';
 import { mountIllustrations } from './illustration-motion.js';
 import { mountTabletSupport } from './tablet.js';
+import { startAppUpdates } from './app-update.js';
+import { storyScene, pendingBeat, readSeen, markSeen, resetSeen, STORY_BOOK } from './story.js';
+import { playScene, companionSay } from './story-player.js';
+import { REACTIONS, SCENES } from './story-script.js';
 let disposeIllustrations = () => {};
 let disposeGuide = () => {}, guideDismissed = false;
 let disposeRoad = () => {};
@@ -61,6 +65,25 @@ function clearVictory() { disposeVictory(); disposeVictory = () => {}; }
 let menuPage = 'home', mapWorld = 0;
 const text = (en, tr) => lang === 'en' ? en : tr;
 const localized = pair => pair?.[lang === 'en' ? 0 : 1] ?? '';
+// Story: a scene waiting to play once the success dialog is dismissed.
+let pendingStory = null, storyPlaying = false;
+const completedCount = chapter => progress.stars.slice(0, chapterMissionCount(chapter)).filter(stars => stars > 0).length;
+const pick = list => list[Math.floor(Math.random() * list.length)];
+const react = kind => { if (view === 'game' && activeChapter === 0) companionSay(pick(REACTIONS[kind]), { lang, voice: sound }); };
+async function playStory(id) {
+  const scene = storyScene(id);
+  if (!scene || storyPlaying) return;
+  storyPlaying = true;
+  try { await playScene(scene, { lang, voice: sound, reducedMotion: reducedRobotMotion }); markSeen(id); }
+  finally { storyPlaying = false; }
+}
+function afterStory(next) {
+  const id = pendingStory;
+  pendingStory = null;
+  if (!id) { next(); return; }
+  closeDialog();
+  playStory(id).then(next);
+}
 const level = () => chapterMission(LEVELS[levelIndex], activeChapter);
 const firstMission = () => isFirstMission(activeChapter, level().id);
 const openingMission = () => isOpeningMission(activeChapter, level().id);
@@ -91,7 +114,14 @@ function renderMenu() {
   return adventureMenu({ page: menuPage, chapter: selectedChapter, world: mapWorld, lang, progress, sound, theme, unlockAll: DEBUG_UNLOCK_ALL, motion: !reducedRobotMotion });
 }
 function showStory() {
-  showDialog(`<button class="dialog-close icon-button" data-dialog="close" aria-label="${text('Close', 'Kapat')}">${icon('close')}</button><span class="eyebrow">CODEKAŞİF</span><h2>${text('KAŞİF’s first mission', 'KAŞİF’in ilk görevi')}</h2><p>${text('Teach a new robot to find its way from KEŞFET LAB to the KEŞFET-1 launch center.', 'Yeni robotuna KEŞFET LAB’dan KEŞFET-1 fırlatma merkezine giden yolu öğret.')}</p><div class="story-pages">${WORLDS.map((world, n) => `<article><h3>${world.icon} ${n + 1}. ${localized(world.names)}</h3><p>${localized(world.story)}</p></article>`).join('')}<article><h3>📡 ${text('A message from space', 'Uzaydan bir mesaj')}</h3><p>${text('“KAŞİF… can you hear me? We need your help…” Your next adventure awaits.', '“KAŞİF… beni duyuyor musun? Yardımına ihtiyacımız var…” Yeni maceran seni bekliyor.')}</p></article></div><button class="primary dialog-primary" data-dialog="close">${text('Ready to explore!', 'Keşfe hazırım!')}</button>`);
+  // The story book: every scene the child has already reached can be watched again.
+  const seen = readSeen();
+  const hints = { intro: text('Open the Explorer map', 'Kâşif haritasını aç'), 'world-1': text('Finish 5 missions', '5 görevi bitir'), 'world-2': text('Finish 10 missions', '10 görevi bitir'), finale: text('Finish every mission', 'Tüm görevleri bitir') };
+  const pages = STORY_BOOK.map((id, n) => {
+    const scene = SCENES[id], open = seen.has(id) || id === 'intro';
+    return `<button type="button" data-story-scene="${id}" ${open ? '' : 'disabled'} style="background-image:url('${scene.backdrop}')"><span>${n + 1}. ${esc(localized(scene.title))}</span><small>${open ? text('Watch again', 'Tekrar izle') : '🔒 ' + hints[id]}</small></button>`;
+  }).join('');
+  showDialog(`<button class="dialog-close icon-button" data-dialog="close" aria-label="${text('Close', 'Kapat')}">${icon('close')}</button><span class="eyebrow">CODEKAŞİF</span><h2>${text('KAŞİF’s story book', 'KAŞİF’in hikâye kitabı')}</h2><p>${text('Every mission you finish moves the story forward. Watch your adventure again here.', 'Bitirdiğin her görev hikâyeyi ilerletir. Maceranı burada yeniden izle.')}</p><div class="story-book">${pages}</div>`);
 }
 function showResetProgress() {
   showDialog(`<h2>${text('Start a new adventure?', 'Yeni bir maceraya başla?')}</h2><p>${text('This clears your saved stars and mission results on this browser. You can still choose any chapter.', 'Bu tarayıcıdaki kayıtlı yıldızların ve görev sonuçların silinir. Yine her seviyeyi seçebilirsin.')}</p><button class="primary dialog-primary" data-dialog="reset-progress">${text('Reset my progress', 'İlerlememi sıfırla')}</button><button class="text-button" data-dialog="close">${text('Keep my adventure', 'Maceramı koru')}</button>`);
@@ -291,6 +321,7 @@ async function runProgram(demo = false) {
     feedback = state.event === 'ready' ? 'launchReady' : state.event || state.error || feedback;
     updateBoard(true, action.type);
     playActionSound(action.type);
+    if (state.event === 'crystal' && !demo) react('crystal');
     await delay(actionDuration(action.type));
     if (id !== runId) return;
     if (state.error || state.won) break;
@@ -299,14 +330,17 @@ async function runProgram(demo = false) {
   if (state.won && !demo) {
     feedback = 'success';
     const score = scoreRun(level(), state, programBlockCount(program));
+    const before = completedCount(activeChapter);
     progress = completeLevel(progress, levelIndex, score, state.crystals?.length || 0);
     save('kesfet-code-progress-v2', progress);
+    pendingStory = activeChapter === 0 ? pendingBeat({ before, after: completedCount(activeChapter), total: chapterMissionCount(activeChapter), seen: readSeen() }) : null;
     render(); showSuccess(score);
   } else if (state.won && demo) {
     feedback = 'demo'; render(); announce(text('Demo complete — now try your own route.', 'Demo tamamlandı — şimdi kendi rotanı dene.'));
   } else {
     if (!state.error && state.event !== 'ready') feedback = 'incomplete';
     render(); announce(feedbackText());
+    if (!demo && id === runId && (state.error || feedback === 'incomplete')) react(state.error ? 'bump' : 'stuck');
   }
 }
 function showOpeningMissionHelp() {
@@ -332,7 +366,7 @@ function runDemo() {
   else demoPending = true;
 }
 function closeDialog() { clearVictory(); const dialog = document.querySelector('dialog'); if (dialog) { dialog.close(); dialog.remove(); } if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); dialogReturnFocus = null; }
-function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } if (action === 'close') closeDialog(); if (action === 'next') openLevel(levelIndex + 1); if (action === 'menu') openMenu(); if (action === 'home') openHome(); if (action === 'again') { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); } }); dialog.addEventListener('cancel', e => { e.preventDefault(); closeDialog(); }); dialog.showModal(); }
+function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) afterStory(closeDialog); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); resetSeen(); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } const scene = e.target.closest('[data-story-scene]')?.dataset.storyScene; if (scene) { closeDialog(); playStory(scene); return; } if (action === 'close') afterStory(closeDialog); if (action === 'next') afterStory(() => openLevel(levelIndex + 1)); if (action === 'menu') afterStory(openMenu); if (action === 'home') openHome(); if (action === 'again') afterStory(() => { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); }); }); dialog.addEventListener('cancel', e => { e.preventDefault(); afterStory(closeDialog); }); dialog.showModal(); }
 function showSuccess(score) {
   const final = levelIndex === chapterMissionCount(activeChapter) - 1;
   showDialog(`<button class="success-home" data-dialog="menu" aria-label="${text('Back to mission map','Görev haritasına dön')}" title="${text('Back to mission map','Görev haritasına dön')}">${icon('home')}</button><div class="success-art">${icon(final ? 'rocket' : 'star')}<span>✦</span><span>✧</span></div><div class="success-stars">${[1,2,3].map(n=>icon('star',n<=score?'earned':'')).join('')}</div><span class="eyebrow">${text('MISSION COMPLETE','GÖREV TAMAMLANDI')}</span><h2>${final && activeChapter !== 0 ? text('KEŞFET-1 is ready for space!','KEŞFET-1 uzaya hazır!') : final ? text('Chapter complete, explorer!','Bölüm tamamlandı, kâşif!') : text('Brilliant work, explorer','Harika iş, kâşif')}</h2><div class="success-controls"><button class="success-replay" data-dialog="again" aria-label="${text('Try again','Yeniden dene')}" title="${text('Try again','Yeniden dene')}">${icon('reset')}</button><button class="success-next" data-dialog="${final?'menu':'next'}" aria-label="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}" title="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}">${icon('arrow')}</button></div>`);
@@ -344,7 +378,7 @@ function showSuccess(score) {
 }
 function showHelp() { if (view === 'game' && firstMission()) { showFirstMissionGuide(); return; } if (twoDimensional()) { showOpeningMissionHelp(); return; } if (running) { cancelRun(); feedback = 'stopped'; render(); } showDialog(`<button class="dialog-close icon-button" data-dialog="close" aria-label="${text('Close', 'Kapat')}">${icon('close')}</button><span class="eyebrow">KEṢFET CODE</span><h2>${text('Little blocks, big adventures', 'Küçük bloklar, büyük maceralar')}</h2><div class="help-step"><span class="step-badge">1</span><div><h3>${text('Build a route', 'Bir rota yap')}</h3><p>${text('Choose Forward, Backward, Robot’s right or Robot’s left. Each direction is relative to where KAŞİF is facing, and the robot faces its new travel direction. Older paths also have turns without movement.', 'İleri, Geri, Robotun sağı veya Robotun solu seç. Yönler KAŞİF’in baktığı yöne göredir; robot yeni hareket yönüne döner. Büyük yaş yollarında yerinde dönüş de vardır.')}</p></div></div><div class="help-step"><span class="step-badge">2</span><div><h3>${text('Plan the objective order', 'Hedef sırasını planla')}</h3><p>${text('Stand on a crystal and add Collect crystal. Later missions add batteries, keys, doors, rocket parts, and launch fragments.', 'Kristalin üstüne gel ve Kristali topla bloğunu ekle. Sonraki görevler piller, anahtarlar, kapılar, roket parçaları ve fırlatma parçaları ekler.')}</p></div></div><div class="help-step"><span class="step-badge">3</span><div><h3>${text('Run and learn', 'Çalıştır ve öğren')}</h3><p>${text('Press the yellow Start block to watch KAŞİF follow your arrows. A battery refills energy, a wall causes a safe bump, and the robot celebrates every crystal.', 'KAŞİF’in oklarını takip etmesini görmek için sarı Başla bloğuna bas. Pil enerjiyi doldurur, duvar güvenli bir çarpma gösterir ve robot her kristali kutlar.')}</p></div></div><div class="help-note">${icon('star')}${text('Chapter 2 teaches loops, repetition, and optimization; Chapter 3 adds conditions, sensors, and functions.', 'Seviye 2 döngüleri, tekrarları ve optimizasyonu; Seviye 3 koşulları, sensörleri ve fonksiyonları öğretir.')}</div><button class="primary dialog-primary" data-dialog="close">${text('Let’s build', 'Haydi kodlayalım')}${icon('arrow')}</button>`); }
 
-app.addEventListener('click', e => { const chapter = e.target.closest('[data-action="chapter-select"]'); if (chapter && !e.target.closest('button')) { selectedChapter = Number(chapter.dataset.chapter); render(); return; } const target = e.target.closest('button,a'); if (!target || target.disabled) return; if (target.hasAttribute('data-world')) { mapWorld = Number(target.dataset.world); render(); return; } if (target.dataset.action === 'choose-path') { openAdventureMap(Number(target.dataset.path), 0); return; } if (target.hasAttribute('data-lang')) { lang = target.dataset.lang; save('kesfet-code-language', lang); render(); return; } if (target.hasAttribute('data-level')) { e.preventDefault(); openLevel(Number(target.dataset.level)); return; } if (target.dataset.action === 'chapter1') { selectedChapter = 0; activeChapter = 0; openLevel(resumeLevel(), 0); return; } if (target.dataset.action === 'chapter-start') { const chapter = Number(target.dataset.chapter); selectedChapter = chapter; activeChapter = chapter; openLevel(resumeLevel(chapter), chapter); return; } if (target.hasAttribute('data-add')) { addBlock(target.dataset.add); return; } if (target.hasAttribute('data-connect') && !running) { const next = movePuzzleStack(puzzleWorkspace, { kind: 'stack', stackId: target.dataset.connect, index: 0 }, { kind: 'connect', stackId: CONNECTED_STACK, index: program.length }); if (next !== puzzleWorkspace) { syncPuzzle(next); editProgram(); } return; }
+app.addEventListener('click', e => { const chapter = e.target.closest('[data-action="chapter-select"]'); if (chapter && !e.target.closest('button')) { selectedChapter = Number(chapter.dataset.chapter); render(); return; } const target = e.target.closest('button,a'); if (!target || target.disabled) return; if (target.hasAttribute('data-world')) { mapWorld = Number(target.dataset.world); render(); return; } if (target.dataset.action === 'choose-path') { const path = Number(target.dataset.path); openAdventureMap(path, 0); if (path === 0 && !readSeen().has('intro')) playStory('intro'); return; } if (target.hasAttribute('data-lang')) { lang = target.dataset.lang; save('kesfet-code-language', lang); render(); return; } if (target.hasAttribute('data-level')) { e.preventDefault(); openLevel(Number(target.dataset.level)); return; } if (target.dataset.action === 'chapter1') { selectedChapter = 0; activeChapter = 0; openLevel(resumeLevel(), 0); return; } if (target.dataset.action === 'chapter-start') { const chapter = Number(target.dataset.chapter); selectedChapter = chapter; activeChapter = chapter; openLevel(resumeLevel(chapter), chapter); return; } if (target.hasAttribute('data-add')) { addBlock(target.dataset.add); return; } if (target.hasAttribute('data-connect') && !running) { const next = movePuzzleStack(puzzleWorkspace, { kind: 'stack', stackId: target.dataset.connect, index: 0 }, { kind: 'connect', stackId: CONNECTED_STACK, index: program.length }); if (next !== puzzleWorkspace) { syncPuzzle(next); editProgram(); } return; }
 if(target.hasAttribute('data-direction-count') && !running && directionCountsAvailable(level())) {
   const [key, change] = target.dataset.directionCount.split(':'), delta = Number(change);
   const block = puzzleBlockAtKey(key);
@@ -368,3 +402,5 @@ document.addEventListener('keydown', e => { if (view !== 'game' || running || do
 window.addEventListener('storage', e => { if (e.key === 'kesfet-code-progress-v2') { progress = normalizeProgress(read(e.key, null)); if (view === 'menu') render(); } });
 render();
 mountTabletSupport({ lang: () => document.documentElement.lang === 'tr' ? 'tr' : 'en' });
+// Never reload over a child's running program; menus are safe to refresh.
+startAppUpdates({ lang: () => lang, canInterrupt: () => view === 'menu' && !running });

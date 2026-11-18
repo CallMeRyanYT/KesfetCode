@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Keşfet Code</string>
+    <string name="title_activity_main">Keşfet Code</string>
+    <string name="package_name">com.kesfetlab.code</string>
+    <string name="custom_url_scheme">com.kesfetlab.code</string>
+</resources>

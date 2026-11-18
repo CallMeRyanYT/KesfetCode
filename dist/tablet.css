@@ -35,8 +35,8 @@ html[data-device=tablet] .adventure-tools>button{min-width:48px;height:48px}
   .adventure-shell{padding:16px 3vw 16px}
 }
 /* Leave room for the large fullscreen pill until fullscreen is on. */
-html:not([data-fullscreen=on]) .map-sidepanel{padding-bottom:64px}
-@media(max-width:1023px){html:not([data-fullscreen=on]) .map-sidepanel{padding-bottom:0}html:not([data-fullscreen=on]) .adventure-map{padding-bottom:80px}}
+html[data-fullscreen=off] .map-sidepanel{padding-bottom:64px}
+@media(max-width:1023px){html[data-fullscreen=off] .map-sidepanel{padding-bottom:0}html[data-fullscreen=off] .adventure-map{padding-bottom:80px}}
 /* Portrait tablets: the board takes the top of the screen at full width, KAŞİF
    speaks from a strip below it, and the program fills the bottom. */
 @media(min-width:761px) and (orientation:portrait){
@@ -53,3 +53,15 @@ html:not([data-fullscreen=on]) .map-sidepanel{padding-bottom:64px}
   .puzzle-mode .puzzle-toolbox .block-palette{gap:7px}
   .puzzle-mode .puzzle-toolbox .palette-block{height:52px;min-height:52px;flex-basis:52px}
 }
+/* Android app updates: a friendly full-screen wait while new game files install. */
+.app-updating{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#1b4f8f,#061a3b 70%);color:#fff;font-family:Outfit,system-ui,sans-serif}
+.app-updating-card{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:24px}
+.app-updating-card img{width:170px;height:auto;animation:app-update-bob 1.4s ease-in-out infinite}
+.app-updating-card strong{font-size:30px}
+.app-updating-card span{font-size:18px;color:#cfe6ff}
+.app-updating-bar{width:min(420px,80vw);height:18px;border-radius:99px;background:#ffffff26;overflow:hidden;border:2px solid #ffffff55}
+.app-updating-bar i{display:block;height:100%;width:4%;border-radius:inherit;background:linear-gradient(90deg,#ffb238,#ff7a00);transition:width .3s}
+@keyframes app-update-bob{50%{transform:translateY(-10px)}}
+.app-native-update{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:1500;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 28px);padding:12px 14px 12px 18px;border-radius:16px;background:#fff7e8;color:#4a2a00;font:600 16px/1.3 Outfit,system-ui,sans-serif;box-shadow:0 8px 24px #0006;border:2px solid #ffb238}
+.app-native-update a{padding:8px 14px;border-radius:12px;background:#ff8a1f;color:#fff;text-decoration:none;font-weight:800}
+.app-native-update button{border:0;background:none;font-size:24px;line-height:1;color:#7a4a10;cursor:pointer}

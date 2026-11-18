@@ -40,7 +40,8 @@ export function mountTabletSupport({ lang = () => 'en' } = {}) {
   const doc = document, html = root();
   const tablet = isTabletLike();
   html.dataset.device = tablet ? 'tablet' : 'desktop';
-  if (!fullscreenSupported(doc) || standalone()) return () => {};
+  // The Android app is already immersive, and an installed web app fills the screen.
+  if (globalThis.Capacitor?.isNativePlatform?.() || !fullscreenSupported(doc) || standalone()) return () => {};
 
   // The button lives outside #app, so re-rendering a page never removes it.
   const button = doc.createElement('button');

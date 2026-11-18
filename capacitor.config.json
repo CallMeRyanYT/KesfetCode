@@ -1,0 +1,16 @@
+{
+  "appId": "com.kesfetlab.code",
+  "appName": "Keşfet Code",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#061a3b"
+  },
+  "plugins": {
+    "CapacitorUpdater": {
+      "autoUpdate": false,
+      "appReadyTimeout": 15000,
+      "resetWhenUpdate": true,
+      "statsUrl": ""
+    }
+  }
+}

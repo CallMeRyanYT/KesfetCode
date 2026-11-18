@@ -18,4 +18,6 @@ for (const [source, destination] of files) {
   await mkdir(dirname(target), { recursive: true });
   await copyFile(resolve('node_modules/three', source), target);
 }
+// Capacitor's runtime lets the Android app reach native plugins such as the updater.
+await copyFile(resolve('node_modules/@capacitor/core/dist/index.js'), resolve('dist/vendor/capacitor-core.js'));
 console.log('Local 3D renderer and loaders prepared.');

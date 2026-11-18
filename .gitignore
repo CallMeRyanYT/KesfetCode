@@ -6,3 +6,6 @@ test-results/
 .vercel
 .env*
 .claude/
+dist/app-update/
+dist/app-update.json
+android-signing/

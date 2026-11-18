@@ -1,0 +1,110 @@
+// KAŞİF with a living face. The painted robot keeps its body; an SVG face drawn
+// in the same tilt as its screen blinks, changes mood and moves its mouth in
+// time with recorded voice lines.
+
+export const MOODS = ['neutral', 'happy', 'surprised', 'thinking', 'sad'];
+export const ACTIONS = ['hop', 'wiggle', 'celebrate', 'nod', 'lean'];
+
+/** Mouth outline for a mood at rest, or an open talking mouth (0 = closed, 1 = wide). */
+export function mouthShape(mood = 'neutral', open = 0) {
+  if (open > .06) {
+    const depth = 22 + 78 * Math.min(1, open), side = 60 + 22 * Math.min(1, open);
+    return { d: `M-${side} -8Q0 0 ${side} -8Q${side * .72} ${depth * .85} 0 ${depth}Q-${side * .72} ${depth * .85} -${side} -8Z`, filled: true };
+  }
+  switch (mood) {
+    case 'happy': return { d: 'M-100 -16Q0 70 100 -16', filled: false };
+    case 'surprised': return { d: 'M-24 6a24 30 0 1 0 48 0a24 30 0 1 0-48 0', filled: true };
+    case 'thinking': return { d: 'M-46 10Q10 2 52 -6', filled: false };
+    case 'sad': return { d: 'M-70 30Q0 -22 70 30', filled: false };
+    default: return { d: 'M-80 -6Q0 46 80 -6', filled: false };
+  }
+}
+
+const EYE = `<rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="22" stroke-linecap="round"/>`;
+
+/** Markup for a talking KAŞİF. `id` keeps SVG filter ids unique on a page. */
+export function talkingRobotMarkup({ mood = 'neutral', className = '', id = 'tr' } = {}) {
+  const rest = mouthShape(mood);
+  return `<span class="talking-robot ${className}" data-mood="${mood}" data-talking-robot aria-hidden="true"><span class="talking-robot-body"><img class="talking-robot-img" src="/assets/kasif-talking.webp" alt="" draggable="false"><svg class="tr-face" viewBox="0 0 1142 1377" aria-hidden="true"><defs><filter id="${id}-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M392 168Q560 120 760 110Q770 140 750 160Q560 170 405 222Z" fill="url(#${id}-gloss)"/><g transform="rotate(-10 590 315)"><g class="tr-blush" fill="#ff6f9c"><ellipse cx="420" cy="352" rx="44" ry="20"/><ellipse cx="760" cy="350" rx="44" ry="20"/></g><g filter="url(#${id}-glow)" fill="#ffd23f" stroke="#ffd23f"><g class="tr-look"><g class="tr-eye" transform="translate(477 276)">${EYE}</g><g class="tr-eye" transform="translate(703 275)">${EYE}</g></g><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></span></span>`;
+}
+
+let sharedContext = null;
+const context = () => {
+  if (sharedContext) return sharedContext;
+  const AudioContext = globalThis.AudioContext || globalThis.webkitAudioContext;
+  sharedContext = AudioContext ? new AudioContext() : null;
+  return sharedContext;
+};
+
+/** Reads how loud a playing <audio> element is, 0–1, for lip-sync. */
+export function voiceMeter(audio) {
+  try {
+    const ctx = context();
+    if (!ctx) return null;
+    if (ctx.state === 'suspended') ctx.resume();
+    const source = ctx.createMediaElementSource(audio);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser); analyser.connect(ctx.destination);
+    const samples = new Uint8Array(analyser.fftSize);
+    return () => {
+      analyser.getByteTimeDomainData(samples);
+      let sum = 0;
+      for (const value of samples) { const v = (value - 128) / 128; sum += v * v; }
+      return Math.min(1, Math.sqrt(sum / samples.length) * 4.2);
+    };
+  } catch { return null; }
+}
+
+/** Controls one rendered talking robot. */
+export class TalkingRobot {
+  constructor(root) {
+    this.root = root;
+    this.mouth = root.querySelector('.tr-mouth');
+    this.mood = root.dataset.mood || 'neutral';
+    this.level = 0;
+    this.frame = 0;
+  }
+  setMood(mood) {
+    if (!MOODS.includes(mood)) mood = 'neutral';
+    this.mood = mood; this.root.dataset.mood = mood;
+    if (!this.frame) this.setMouth(0);
+  }
+  setMouth(open) {
+    const shape = mouthShape(this.mood, open);
+    this.mouth.setAttribute('d', shape.d);
+    this.mouth.setAttribute('fill', shape.filled ? '#2a1600' : 'none');
+  }
+  act(name) {
+    if (!ACTIONS.includes(name)) return;
+    const body = this.root.querySelector('.talking-robot-body');
+    body.classList.remove(...ACTIONS.map(action => `tr-${action}`));
+    void body.offsetWidth;
+    body.classList.add(`tr-${name}`);
+    clearTimeout(this.actTimer);
+    this.actTimer = setTimeout(() => body.classList.remove(`tr-${name}`), 1400);
+  }
+  /**
+   * Moves the mouth while speaking. `meter` returns loudness (from voiceMeter);
+   * without one, a gentle babble follows the text for `duration` ms.
+   */
+  talk({ meter = null, duration = 2000 } = {}) {
+    this.stopTalking();
+    this.root.classList.add('is-talking');
+    const start = performance.now();
+    const tick = now => {
+      const t = (now - start) / 1000;
+      const target = meter ? meter() : (now - start < duration ? .35 + .3 * Math.sin(t * 17) * Math.sin(t * 5.3) + .2 * Math.sin(t * 29) : 0);
+      // Opening is quick and closing a little slower, like real speech.
+      this.level += (Math.max(0, target) - this.level) * (target > this.level ? .55 : .3);
+      this.setMouth(this.level < .08 ? 0 : this.level);
+      this.frame = requestAnimationFrame(tick);
+    };
+    this.frame = requestAnimationFrame(tick);
+  }
+  stopTalking() {
+    cancelAnimationFrame(this.frame); this.frame = 0; this.level = 0;
+    this.root.classList.remove('is-talking');
+    this.setMouth(0);
+  }
+}
