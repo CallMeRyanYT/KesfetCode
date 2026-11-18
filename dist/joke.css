@@ -1,9 +1,0 @@
-/* One-time joke: every robot is turned 90°. To undo, delete this file's
-   <link> line in index.html (or this file) and push. `rotate` is separate from
-   `transform`, so the robots still hop, talk and blink while sideways. */
-.talking-robot,
-.reference-robot-art,
-.classroom-robot-art,
-.lab-lockup img,
-.app-updating-card img,
-.brand img{rotate:90deg}
