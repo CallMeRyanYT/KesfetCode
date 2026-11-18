@@ -1,0 +1,55 @@
+/* Fullscreen button: a large, high-contrast pill until fullscreen is on, then a
+   small corner control so it never covers the board or the map. */
+.fullscreen-toggle{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:900;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 20px 0 16px;border:3px solid #fff;border-radius:999px;background:linear-gradient(180deg,#ff9b2f,#f06a00);color:#fff;font:800 17px/1 Outfit,system-ui,sans-serif;letter-spacing:.2px;box-shadow:0 5px 0 #a54300,0 10px 22px #00142f80;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.fullscreen-toggle svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.fullscreen-toggle:hover{filter:brightness(1.06)}
+.fullscreen-toggle:active{transform:translateY(3px);box-shadow:0 2px 0 #a54300,0 6px 14px #00142f80}
+.fullscreen-toggle:focus-visible{outline:4px solid #ffe066;outline-offset:3px}
+html[data-fullscreen=off] .fullscreen-toggle{animation:fullscreen-nudge 2.4s ease-in-out 3}
+@keyframes fullscreen-nudge{0%,70%,100%{transform:none}80%{transform:translateY(-4px)}90%{transform:none}}
+.fullscreen-toggle.is-on{min-height:46px;width:46px;padding:0;justify-content:center;border-width:2px;background:#061a3bd9;box-shadow:0 3px 10px #0006;opacity:.82}
+.fullscreen-toggle.is-on span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fullscreen-toggle.is-on svg{width:22px;height:22px}
+html[data-device=desktop] .fullscreen-toggle:not(.is-on){min-height:44px;font-size:15px;padding:0 16px 0 12px}
+@media(prefers-reduced-motion:reduce){.fullscreen-toggle{animation:none!important}}
+
+/* Touch screens: smooth scrolling. Fixed backgrounds repaint the whole page on
+   every scroll frame (iPad Safari ignores them anyway), and backdrop blurs over
+   large paintings are re-rendered as content moves beneath them. */
+@media (hover:none),(pointer:coarse){
+  .adventure-shell,.play-page,.play-page.play-chapter-0,html[data-theme=light] .play-page.play-chapter-0{background-attachment:scroll!important}
+  .scene-tag,.camera-tools,.hud-chip,.play-page .mission-panel,.play-page .program-dock,.play-page .play-palette,html[data-theme=light] .play-page .camera-tools{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  html,body{overscroll-behavior:none}
+  html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .mission-node,.mission-road-node,.space-button,.adventure-tools>button,.space-back{touch-action:manipulation}
+}
+/* Animated props get their own compositor layer, so sway and float never repaint the board. */
+.classroom-reference-board[data-motion=on] :is(.prop-bush,.reference-crystal-floating,.reference-flag-cloth),.classroom-board[data-motion=on] .classroom-crystal-gem{will-change:transform}
+.journey-map{contain:layout paint}
+
+/* Tablet sizes: larger targets on the map and comfortable spacing. */
+html[data-device=tablet] .all-missions .node-orb{width:48px;height:48px;font-size:25px}
+html[data-device=tablet] .adventure-tools>button{min-width:48px;height:48px}
+@media(min-width:601px) and (max-width:1366px) and (pointer:coarse){
+  .adventure-shell{padding:16px 3vw 16px}
+}
+/* Leave room for the large fullscreen pill until fullscreen is on. */
+html:not([data-fullscreen=on]) .map-sidepanel{padding-bottom:64px}
+@media(max-width:1023px){html:not([data-fullscreen=on]) .map-sidepanel{padding-bottom:0}html:not([data-fullscreen=on]) .adventure-map{padding-bottom:80px}}
+/* Portrait tablets: the board takes the top of the screen at full width, KAŞİF
+   speaks from a strip below it, and the program fills the bottom. */
+@media(min-width:761px) and (orientation:portrait){
+  .puzzle-mode .play-layout,.puzzle-mode.play-chapter-0 .play-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 120px minmax(345px,1fr);gap:10px}
+  .puzzle-mode .play-stage{grid-column:1;grid-row:1}
+  .puzzle-editor{grid-column:1;grid-row:3}
+  .puzzle-mode .mission-companion{position:relative;grid-column:1;grid-row:2;left:auto;bottom:auto;display:flex;flex-direction:row-reverse;align-items:center;width:100%;height:120px;gap:10px;overflow:hidden;z-index:auto}
+  .puzzle-mode .companion-robot{bottom:-26px;flex-shrink:0;width:128px;height:auto;align-self:flex-end}
+  .puzzle-mode .companion-bubble{position:relative;flex:1;left:auto;bottom:auto;width:auto;padding:12px 16px;border-radius:18px}
+  .puzzle-mode .companion-bubble:after{left:-10px;top:55%;bottom:auto;width:16px;height:16px;transform:rotate(135deg)}
+  .puzzle-mode .companion-tip{font-size:16px;line-height:1.35}
+  .puzzle-hint{right:12px;left:12px;max-width:none}
+  .puzzle-mode .puzzle-toolbox{padding-top:8px}
+  .puzzle-mode .puzzle-toolbox .block-palette{gap:7px}
+  .puzzle-mode .puzzle-toolbox .palette-block{height:52px;min-height:52px;flex-basis:52px}
+}

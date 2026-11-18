@@ -89,6 +89,11 @@ const worldTerrain = {
   6: ['rock', 'dish', 'console', 'crate']
 };
 
+/** Every Explorer mission uses mission one's painted toy-board style. */
+export const usesReferenceArt = level => level?.curriculum === 0;
+// Painted props exist for tree, bush, rock and crate; other world props map onto them.
+const REFERENCE_PROP = { planter: 'crate', post: 'tree', tree: 'tree', bush: 'bush', rock: 'rock', crate: 'crate' };
+
 export function classroomTerrain(world, cell) {
   if (!cell.blocked) return null;
   const seed = (cell.row * 17 + cell.col * 11 + world * 7) % 19;
@@ -101,8 +106,12 @@ function terrainIcon(kind) {
   return `<svg viewBox="0 0 100 100" fill="none" aria-hidden="true">${terrainProps[kind]}</svg>`;
 }
 
+// A painted-style finish flag marks the exit on the toy board.
+const finishFlag = `<svg class="reference-flag" viewBox="0 0 100 100" fill="none" aria-hidden="true"><ellipse cx="50" cy="88" rx="24" ry="6" fill="#2d6b12" opacity=".35"/><path d="M30 86q20-9 40 0v4q-20 7-40 0Z" fill="#9b6b3c" stroke="#6e4823" stroke-width="2"/><rect x="36" y="13" width="6" height="74" rx="3" fill="#c08a52" stroke="#6e4823" stroke-width="2"/><circle cx="39" cy="12" r="5" fill="#ffd34a" stroke="#a5700e" stroke-width="2"/><path class="reference-flag-cloth" d="M42 17q14-6 26 1t26-1v29q-13 6-26-1t-26 1Z" fill="#ff8a1f" stroke="#a84a0c" stroke-width="2.5" stroke-linejoin="round"/><path d="M55 22h10v10H55Zm10 10h10v10H65Zm-20 0h10v10H45Z" fill="#fff4dc" opacity=".9"/><path d="M45 21q8-3 15 0" stroke="#ffe0a8" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+
 function markerIcon(tile, level) {
   if (tile === 'C' || (tile === 'E' && level.id <= 4)) return crystalIcon;
+  if (tile === 'E' && usesReferenceArt(level)) return finishFlag;
   const symbols = {
     E: '<rect x="17" y="18" width="66" height="66" rx="17" fill="#D8FAE6" stroke="#39A475" stroke-width="4"/><path d="M30 50h40m-13-13 13 13-13 13" stroke="#219367" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>',
     B: '<rect x="26" y="20" width="48" height="65" rx="12" fill="#B1ED70" stroke="#3B752E" stroke-width="5"/><path d="M42 20v-8h16v8m-4 15-14 24h14l-7 19" stroke="#3B752E" stroke-width="6" stroke-linejoin="round"/>',
@@ -184,7 +193,7 @@ export class Classroom2D {
   buildBoard() {
     this.root?.remove();
     this.root = document.createElement('div');
-    this.root.className = `classroom-board${this.layout.fullGrid ? ' classroom-full-grid' : ''}${this.level.id === 1 && this.level.curriculum === 0 ? ' classroom-reference-board' : ''}`;
+    this.root.className = `classroom-board${this.layout.fullGrid ? ' classroom-full-grid' : ''}${usesReferenceArt(this.level) ? ' classroom-reference-board' : ''}`;
     this.root.dataset.world = String(this.level.world || 1);
     this.root.dataset.motion = this.reducedMotion ? 'off' : 'on';
     this.root.setAttribute('aria-hidden', 'true');
@@ -198,11 +207,11 @@ export class Classroom2D {
       element.dataset.walkable = String(!cell.blocked);
       element.style.left = `${(cell.col - this.layout.minCol) / this.layout.cols * 100}%`;
       element.style.top = `${(cell.row - this.layout.minRow) / this.layout.rows * 100}%`;
-      const reference = this.level.id === 1 && this.level.curriculum === 0;
+      const reference = usesReferenceArt(this.level);
       const originalTerrain = classroomTerrain(this.level.world || 1, cell);
-      const terrain = reference && originalTerrain === 'planter' ? 'crate' : originalTerrain;
+      const terrain = reference ? REFERENCE_PROP[originalTerrain] || originalTerrain : originalTerrain;
       element.style.setProperty('--classroom-breeze-delay', `${-(cell.row * .37 + cell.col * .61).toFixed(2)}s`);
-      const art = reference && ['tree', 'bush', 'rock', 'crate'].includes(terrain) ? `<img class="reference-prop" src="/assets/level-one-${terrain}.png" alt="">` : terrainIcon(terrain);
+      const art = reference && ['tree', 'bush', 'rock', 'crate'].includes(terrain) ? `<img class="reference-prop" src="/assets/level-one-${terrain}.webp" alt="">` : terrainIcon(terrain);
       element.innerHTML = `<span class="classroom-turf" aria-hidden="true"></span>${cell.blocked ? (terrain ? `<span class="classroom-terrain-prop prop-${terrain}">${art}</span>` : '') : `<span class="classroom-flower flower-one">${flowerIcon}</span><span class="classroom-flower flower-two">${flowerIcon}</span>`}`;
       this.plane.append(element);
       if (!['.', 'S', '#'].includes(cell.tile)) {
@@ -216,7 +225,7 @@ export class Classroom2D {
     }
     this.robot = document.createElement('div');
     this.robot.className = 'classroom-robot';
-    const robotArt = this.level.id === 1 && this.level.curriculum === 0 ? '<span class="reference-robot-art"><img class="reference-robot" src="/assets/level-one-robot.png" alt=""><svg class="reference-face" viewBox="0 0 1312 1199" aria-hidden="true"><path d="M465 407h150v100H465zm247 0h150v100H712z" fill="#0a0908"/><g class="reference-eyes"><path d="M490 484 Q536 391 583 484 M735 484 Q782 391 828 484" fill="none" stroke="#ffdf46" stroke-width="22" stroke-linecap="round"/></g></svg></span>' : robotIcon;
+    const robotArt = usesReferenceArt(this.level) ? '<span class="reference-robot-art"><img class="reference-robot" src="/assets/level-one-robot.webp" alt=""><svg class="reference-face" viewBox="0 0 1312 1199" aria-hidden="true"><path d="M465 407h150v100H465zm247 0h150v100H712z" fill="#0a0908"/><g class="reference-eyes"><path d="M490 484 Q536 391 583 484 M735 484 Q782 391 828 484" fill="none" stroke="#ffdf46" stroke-width="22" stroke-linecap="round"/></g></svg></span>' : robotIcon;
     this.robot.innerHTML = `<span class="classroom-robot-body">${robotArt}</span><span class="classroom-win-spark spark-one">✦</span><span class="classroom-win-spark spark-two">✦</span>`;
     this.plane.append(this.robot);
   }
@@ -245,10 +254,10 @@ export class Classroom2D {
   }
 
   scheduleIdle() {
-    if (!this.host || !this.robot || this.reducedMotion || this.idleTimer || this.idleEndTimer || this.level?.id !== 1 || this.level?.curriculum !== 0 || this.lastState?.won) return;
+    if (!this.host || !this.robot || this.reducedMotion || this.idleTimer || this.idleEndTimer || !usesReferenceArt(this.level) || this.lastState?.won) return;
     this.idleTimer = setTimeout(() => {
       this.idleTimer = null;
-      if (!this.host || this.reducedMotion || this.motion || this.lastState?.won || this.level?.id !== 1 || this.level?.curriculum !== 0) { this.scheduleIdle(); return; }
+      if (!this.host || this.reducedMotion || this.motion || this.lastState?.won || !usesReferenceArt(this.level)) { this.scheduleIdle(); return; }
       const choices = ['idle-look-left', 'idle-look-right', 'idle-bob'];
       const choice = choices[Math.floor(Math.random() * choices.length)];
       this.robot.classList.add(choice);

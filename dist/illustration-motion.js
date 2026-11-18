@@ -26,7 +26,6 @@ function wavingArm(image, plate) {
   b.globalCompositeOperation='destination-over'; b.drawImage(image,0,0); b.globalCompositeOperation='source-over';
   return {arm,base};
 }
-function polygon(ctx,points) {ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}
 function chapterSprite(source, chapter) {
   const sprite=document.createElement('canvas');sprite.width=512;sprite.height=1024;
   sprite.getContext('2d').drawImage(source,chapter*512,0,512,1024,0,0,512,1024);
@@ -42,86 +41,203 @@ function satelliteLayer(img,chapter) {
   c.clip(path);c.drawImage(img,0,0);
   return layer;
 }
-// Broad water regions are intersected with a pixel-color mask, keeping trees/bridges dry.
-const WATER = [
-  {p:[[14,9],[20,9],[20,22],[16,22],[14,16]],fall:true},
-  {p:[[24,32],[38,33],[45,34],[43,36],[31,35],[24,34]],fall:false},
-  {p:[[51,34],[63,35],[70,38],[72,44],[69,48],[64,45],[64,39],[54,37]],fall:true},
-  {p:[[69,49],[79,49],[80,57],[74,61],[68,58]],fall:true},
-  {p:[[43,58],[58,58],[72,63],[83,66],[86,70],[78,71],[66,65],[51,62]],fall:false},
-  {p:[[85,72],[92,73],[97,84],[95,88],[90,85],[87,79]],fall:true}
+// Water is animated by moving soft highlight streaks over the untouched painting.
+// Masks were traced from the artwork's water pixels, so rocks, roofs and the
+// crystal stay dry. Rectangles are disjoint image-pixel regions; flow is the
+// on-screen direction the water travels and speed is in image pixels/second.
+export const MAP_WATER = [
+  {r:[90,0,405,400],flow:[.3,1],speed:70,fall:true},
+  {r:[255,470,660,610],flow:[1,.3],speed:16},
+  {r:[660,560,800,705],flow:[0,1],speed:80,fall:true},
+  {r:[620,705,980,815],flow:[.4,1],speed:30},
+  {r:[770,815,930,950],flow:[0,1],speed:80,fall:true},
+  {r:[930,815,1024,950],flow:[.25,1],speed:45,fall:true},
+  {r:[340,815,770,1060],flow:[1,.3],speed:16},
+  {r:[770,950,840,1060],flow:[1,.3],speed:16},
+  {r:[840,950,1024,1400],flow:[.25,1],speed:45,fall:true}
 ];
-function waterPatch(image,region) {
-  const xs=region.p.map(p=>p[0]*image.width/100),ys=region.p.map(p=>p[1]*image.height/100);
-  const x=Math.floor(Math.min(...xs)),y=Math.floor(Math.min(...ys)),w=Math.ceil(Math.max(...xs)-x),h=Math.ceil(Math.max(...ys)-y);
-  const mask=document.createElement('canvas');mask.width=w;mask.height=h;const m=mask.getContext('2d',{willReadFrequently:true});
-  m.drawImage(image,x,y,w,h,0,0,w,h);const pixels=m.getImageData(0,0,w,h);
-  for(let i=0;i<pixels.data.length;i+=4){const r=pixels.data[i],g=pixels.data[i+1],b=pixels.data[i+2];const aqua=b>r*1.1&&g>r*1.08&&b>105;const foam=r>190&&g>205&&b>210;pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=255;pixels.data[i+3]=aqua||foam?235:0;}
-  m.putImageData(pixels,0,0);m.globalCompositeOperation='destination-in';polygon(m,region.p.map(([a,b])=>[a*image.width/100-x,b*image.height/100-y]));m.fill();
-  const layer=document.createElement('canvas');layer.width=w;layer.height=h;
-  return {...region,x,y,w,h,mask,layer,ctx:layer.getContext('2d')};
-}
-export function mountIllustrations(root) {
-  let stopped=false,frame=0,last=0,time=0;
-  const entries=[];
-  for(const canvas of root.querySelectorAll('canvas[data-illustration]')) {
-    const home=canvas.dataset.illustration==='robot',chapter=canvas.dataset.illustration==='chapter'?Number(canvas.dataset.chapter):null;
-    const src=home?'/assets/spaceport-menu.png':canvas.dataset.src;
-    Promise.all([load(src),home?load('/assets/spaceport-arm-plate.png'):chapter>0?load('/assets/chapter-dish-plate.png'):Promise.resolve(null)]).then(([img,plate])=>{
-      if(stopped)return;
-      if(chapter!==null){img=chapterSprite(img,chapter);if(plate)plate=chapterSprite(plate,chapter);}
-      canvas.width=img.width;canvas.height=img.height;
-      const entry={canvas,ctx:canvas.getContext('2d'),img,plate,home,chapter};
-      if(home)Object.assign(entry,wavingArm(img,plate));
-      else if(chapter>0)entry.dish=satelliteLayer(img,chapter);
-      else if(chapter===0)entry.patches=[{p:[[50,42],[73,44],[75,50],[74,78],[59,80],[57,51],[47,48]],fall:true},{p:[[15,47],[25,47],[24,68],[18,67]],fall:true}].map(p=>waterPatch(img,p));
-      else entry.patches=WATER.map(p=>waterPatch(img,p));
-      entries.push(entry);canvas.dataset.ready='true';
-    }).catch(()=>{canvas.hidden=true;});
-  }
-  function tick(now){
-    if(stopped)return;frame=requestAnimationFrame(tick);if(now-last<40||document.hidden)return;
-    const dt=Math.min(60,now-last);last=now;
-    const enabled=document.documentElement.dataset.sceneryMotion!=='off';if(enabled)time+=dt/1000;
-    for(const e of entries){
-      const {ctx:c,canvas,img}=e;c.clearRect(0,0,canvas.width,canvas.height);
-      if(e.home){
-        c.drawImage(img,0,0);
-        if(enabled){
-          c.drawImage(e.base,0,0);
-          const angle=Math.sin(time*2.8)*.13;
-          c.save();c.translate(327,697);c.rotate(angle);c.translate(-327,-697);c.drawImage(e.arm,0,0);c.restore();
-          // Original circular elbow cap covers the seam in both directions.
-          c.save();c.beginPath();c.arc(327,697,11,0,Math.PI*2);c.clip();c.drawImage(img,0,0);c.restore();
-          canvas.dataset.armAngle=angle.toFixed(3);
-        }
-      }else if(e.chapter>0){
-        c.drawImage(enabled?e.plate:img,0,0);
-        if(enabled){const pivot=e.chapter===1?[380,304]:[393,376],angle=Math.sin(time*.8+e.chapter)*.12;
-          c.save();c.translate(...pivot);c.rotate(angle);c.translate(-pivot[0],-pivot[1]);
-          c.beginPath();c.moveTo(...pivot);c.lineTo(pivot[0]+16,pivot[1]-9);c.strokeStyle=e.chapter===1?'#665453':'#444c70';c.lineWidth=8;c.lineCap='round';c.stroke();
-          c.drawImage(e.dish,0,0);c.restore();canvas.dataset.dishAngle=angle.toFixed(3);
-        }
-      }else if(enabled){
-        if(e.chapter===0)c.drawImage(img,0,0);
-        for(const p of e.patches){
-          const a=p.ctx;a.clearRect(0,0,p.w,p.h);a.globalCompositeOperation='source-over';
-          // Advect the original foam texture downward, crossfading two wrapped phases.
-          for(let pass=0;pass<2;pass++){
-            const phase=(time*(p.fall?.65:.28)+pass*.5)%1; a.globalAlpha=1-Math.abs(phase*2-1);
-            const travel=phase*(p.fall?24:9);
-            for(let row=0;row<p.h;row+=3){
-              const sy=Math.max(0,Math.min(p.h-3,row-travel));
-              const ripple=Math.sin(row*.13-time*3)* (p.fall?1.3:2.8);
-              a.drawImage(img,p.x,p.y+sy,p.w,3,ripple,row,p.w,3);
-            }
-          }
-          a.globalAlpha=1;a.globalCompositeOperation='destination-in';a.drawImage(p.mask,0,0);a.globalCompositeOperation='source-over';c.drawImage(p.layer,p.x,p.y);
-        }
-        canvas.dataset.flowTime=time.toFixed(2);
-      }else if(e.chapter===0)c.drawImage(img,0,0);
+export const CARD_WATER = [
+  {r:[240,410,420,480],flow:[.15,1],speed:24},
+  {r:[240,480,385,810],flow:[0,1],speed:70,fall:true},
+  {r:[88,480,132,720],flow:[0,1],speed:60,fall:true},
+  {r:[395,480,447,690],flow:[0,1],speed:60,fall:true}
+];
+const TILE = 128;
+function streakTile(fall, seed = 7) {
+  let s = seed;
+  const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const tile = document.createElement('canvas'); tile.width = tile.height = TILE;
+  const t = tile.getContext('2d'); t.lineCap = 'round';
+  for (let i = 0; i < (fall ? 56 : 38); i++) {
+    const x = rand() * TILE, y = rand() * TILE;
+    const len = fall ? 18 + rand() * 50 : 5 + rand() * 12;
+    const alpha = fall ? .22 + rand() * .4 : .16 + rand() * .32;
+    t.strokeStyle = `rgba(240,255,255,${alpha.toFixed(2)})`;
+    t.lineWidth = fall ? .8 + rand() * 1.8 : 1 + rand() * 1.4;
+    // Each streak is drawn across the wrapped edges so the tile repeats seamlessly.
+    for (const dx of [-TILE, 0, TILE]) for (const dy of [-TILE, 0, TILE]) {
+      t.beginPath(); t.moveTo(x + dx, y + dy); t.lineTo(x + dx, y + dy + len); t.stroke();
     }
   }
-  frame=requestAnimationFrame(tick);
-  return ()=>{stopped=true;cancelAnimationFrame(frame);};
+  return tile;
+}
+function waterRegions(maskImage, regions) {
+  const fallTile = streakTile(true), riverTile = streakTile(false, 19);
+  return regions.map(region => {
+    const [x0, y0, x1, y1] = region.r, w = x1 - x0, h = y1 - y0;
+    const mask = document.createElement('canvas'); mask.width = w; mask.height = h;
+    mask.getContext('2d').drawImage(maskImage, x0, y0, w, h, 0, 0, w, h);
+    const layer = document.createElement('canvas'); layer.width = w; layer.height = h;
+    const l = layer.getContext('2d');
+    const [dx, dy] = region.flow, len = Math.hypot(dx, dy);
+    const tile = region.fall ? fallTile : riverTile;
+    return { ...region, x: x0, y: y0, w, h, mask, layer, l,
+      angle: Math.atan2(-dx / len, dy / len) * 180 / Math.PI,
+      patterns: [l.createPattern(tile, 'repeat'), l.createPattern(tile, 'repeat')] };
+  });
+}
+function paintWater(c, regions, time, overlay = true) {
+  for (const p of regions) {
+    const a = p.l;
+    a.globalCompositeOperation = 'source-over'; a.clearRect(0, 0, p.w, p.h);
+    // Two layers at different scales and speeds avoid a visibly repeating tile.
+    [[1, 1, 1], [1.7, .62, .7]].forEach(([scale, rate, alpha], i) => {
+      const pattern = p.patterns[i], travel = (time * p.speed * rate) % (TILE * scale);
+      pattern.setTransform(new DOMMatrix().translate(p.w / 2, p.h / 2).rotate(p.angle).translate(0, travel).scale(scale));
+      a.globalAlpha = alpha; a.fillStyle = pattern; a.fillRect(0, 0, p.w, p.h);
+    });
+    a.globalAlpha = 1; a.globalCompositeOperation = 'destination-in'; a.drawImage(p.mask, 0, 0);
+    // A transparent overlay is cleared first; the card redraws its painting instead.
+    if (overlay) c.clearRect(p.x, p.y, p.w, p.h);
+    c.drawImage(p.layer, p.x, p.y);
+  }
+}
+// Gull silhouettes keep their real proportions at every map size.
+const BIRDS = [
+  { y: .16, amp: .025, duration: 26, delay: 0, size: 1 },
+  { y: .2, amp: .02, duration: 26, delay: -.6, size: .82 },
+  { y: .42, amp: .03, duration: 31, delay: -12, size: .95 },
+  { y: .62, amp: .025, duration: 28, delay: -20, size: .9 },
+  { y: .66, amp: .02, duration: 28, delay: -20.7, size: .75 }
+];
+export function birdPose(bird, time) {
+  const progress = ((((time + bird.delay) / bird.duration) % 1) + 1) % 1;
+  const cycle = (((time + bird.delay * 1.7) % 3.2) + 3.2) % 3.2;
+  // Flap for two seconds, then glide with the wings held in a shallow V. The
+  // flap fades in and out, so the wings never snap between the two poses.
+  const ease = x => x * x * (3 - 2 * x);
+  const flapping = cycle < 2 ? ease(Math.min(1, cycle / .3, (2 - cycle) / .3)) : 0;
+  const lift = .3 + flapping * (Math.sin(cycle * Math.PI * 2 / .45) - .3);
+  return { x: -.06 + progress * 1.12, y: bird.y + Math.sin(progress * Math.PI * 2.4) * bird.amp, lift };
+}
+function paintBirds(c, width, height, time) {
+  const span = Math.max(9, Math.min(20, width * .024));
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = c.fillStyle = 'rgba(20,44,58,.82)';
+  for (const bird of BIRDS) {
+    const { x, y, lift } = birdPose(bird, time), s = span * bird.size;
+    c.save(); c.translate(x * width, y * height);
+    c.lineWidth = Math.max(1.3, s * .12); c.beginPath();
+    for (const side of [-1, 1]) {
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(side * s * .42, -s * .2 - lift * s * .22, side * s, s * .06 - lift * s * .4);
+    }
+    c.stroke();
+    c.beginPath(); c.ellipse(0, s * .03, s * .1, s * .065, 0, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+}
+export function mountIllustrations(root) {
+  let stopped = false, frame = 0, last = 0, time = 0;
+  const entries = [];
+  const watcher = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(items => {
+    for (const item of items) {
+      const entry = entries.find(e => e.canvas === item.target);
+      if (entry) entry.visible = item.isIntersecting;
+    }
+  });
+  const add = entry => { entry.visible = true; entries.push(entry); watcher?.observe(entry.canvas); entry.canvas.dataset.ready = 'true'; };
+  for (const canvas of root.querySelectorAll('canvas[data-illustration]')) {
+    const kind = canvas.dataset.illustration;
+    if (kind === 'birds') { add({ canvas, ctx: canvas.getContext('2d'), birds: true }); continue; }
+    const home = kind === 'robot', chapter = kind === 'chapter' ? Number(canvas.dataset.chapter) : null;
+    const src = home ? '/assets/spaceport-menu.webp' : canvas.dataset.src;
+    const extra = home ? load('/assets/spaceport-arm-plate.webp')
+      : chapter > 0 ? load('/assets/chapter-dish-plate.webp')
+      : chapter === 0 ? load('/assets/chapter-one-card-water-mask.png')
+      : canvas.dataset.mask ? load(canvas.dataset.mask) : Promise.resolve(null);
+    Promise.all([load(src), extra]).then(([img, plate]) => {
+      if (stopped) return;
+      if (chapter !== null) { img = chapterSprite(img, chapter); if (chapter > 0 && plate) plate = chapterSprite(plate, chapter); }
+      const entry = { canvas, ctx: canvas.getContext('2d'), img, plate, home, chapter };
+      if (home) Object.assign(entry, wavingArm(img, plate));
+      else if (chapter > 0) entry.dish = satelliteLayer(img, chapter);
+      else if (chapter === 0) entry.regions = waterRegions(plate, CARD_WATER);
+      else if (plate) entry.regions = waterRegions(plate, MAP_WATER);
+      else { canvas.hidden = true; return; }
+      canvas.width = img.width; canvas.height = img.height;
+      add(entry);
+    }).catch(() => { canvas.hidden = true; });
+  }
+  function tick(now) {
+    if (stopped) return;
+    frame = requestAnimationFrame(tick);
+    if (now - last < 45 || document.hidden) return;
+    const dt = Math.min(60, now - last); last = now;
+    const enabled = document.documentElement.dataset.sceneryMotion !== 'off';
+    if (enabled) time += dt / 1000;
+    for (const e of entries) {
+      // Off-screen artwork keeps its last frame and costs nothing while scrolling.
+      if (!e.visible && e.drawn) continue;
+      const { ctx: c, canvas, img } = e;
+      if (e.birds) {
+        const ratio = Math.min(2, globalThis.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
+        if (!w || !h) continue;
+        if (canvas.width !== Math.round(w * ratio) || canvas.height !== Math.round(h * ratio)) { canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio); }
+        c.setTransform(ratio, 0, 0, ratio, 0, 0); c.clearRect(0, 0, w, h); paintBirds(c, w, h, time);
+        e.drawn = true; continue;
+      }
+      if (e.drawn && !enabled) continue;
+      if (e.home) {
+        // Paint the full illustration once; afterwards only the waving forearm's area changes.
+        if (!e.drawn) c.drawImage(img, 0, 0);
+        c.save(); c.beginPath(); c.rect(280, 530, 190, 215); c.clip();
+        c.drawImage(img, 0, 0);
+        if (enabled) {
+          c.drawImage(e.base, 0, 0);
+          const angle = Math.sin(time * 2.8) * .13;
+          c.save(); c.translate(327, 697); c.rotate(angle); c.translate(-327, -697); c.drawImage(e.arm, 0, 0); c.restore();
+          // Original circular elbow cap covers the seam in both directions.
+          c.save(); c.beginPath(); c.arc(327, 697, 11, 0, Math.PI * 2); c.clip(); c.drawImage(img, 0, 0); c.restore();
+          canvas.dataset.armAngle = angle.toFixed(3);
+        }
+        c.restore();
+      } else if (e.chapter > 0) {
+        // Only the satellite dish moves; the rest of the card keeps its first paint.
+        if (!e.drawn) c.drawImage(img, 0, 0);
+        const pivot = e.chapter === 1 ? [380, 304] : [393, 376];
+        c.save(); c.beginPath(); c.rect(pivot[0] - 50, pivot[1] - 110, 125, 140); c.clip();
+        c.drawImage(enabled ? e.plate : img, 0, 0);
+        if (enabled) {
+          const angle = Math.sin(time * .8 + e.chapter) * .12;
+          c.save(); c.translate(...pivot); c.rotate(angle); c.translate(-pivot[0], -pivot[1]);
+          c.beginPath(); c.moveTo(...pivot); c.lineTo(pivot[0] + 16, pivot[1] - 9); c.strokeStyle = e.chapter === 1 ? '#665453' : '#444c70'; c.lineWidth = 8; c.lineCap = 'round'; c.stroke();
+          c.drawImage(e.dish, 0, 0); c.restore(); canvas.dataset.dishAngle = angle.toFixed(3);
+        }
+        c.restore();
+      } else if (e.chapter === 0) {
+        // The card canvas is the artwork itself; redraw only the stream's rectangles.
+        if (!e.drawn) c.drawImage(img, 0, 0);
+        for (const p of e.regions) c.drawImage(img, p.x, p.y, p.w, p.h, p.x, p.y, p.w, p.h);
+        if (enabled) paintWater(c, e.regions, time, false);
+        canvas.dataset.flowTime = time.toFixed(2);
+      } else {
+        // The map canvas is a transparent overlay above the painting.
+        if (enabled) { paintWater(c, e.regions, time); canvas.dataset.flowTime = time.toFixed(2); }
+      }
+      e.drawn = true;
+    }
+  }
+  frame = requestAnimationFrame(tick);
+  return () => { stopped = true; cancelAnimationFrame(frame); watcher?.disconnect(); };
 }

@@ -2,7 +2,13 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Keşfet Code">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/assets/app-icon-192.png">
   <meta name="theme-color" content="#ff750b">
   <meta name="description" content="Code KAŞİF through six worlds and thirty missions. Collect crystals, recharge with batteries, and launch KEŞFET-1. Keşfet Code, made by Keşfet Lab.">
   <title>Keşfet Code · KAŞİF Coding Adventure</title>
@@ -16,6 +22,8 @@
   <link rel="stylesheet" href="/puzzle-workspace.css">
   <link rel="stylesheet" href="/mission-road.css">
   <link rel="stylesheet" href="/victory-celebration.css">
+  <link rel="stylesheet" href="/tablet.css">
+  <link rel="preload" as="image" href="/assets/spaceport-menu.webp">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/addons/"}}</script>
   <script type="module" src="/app.js"></script>
 </head>

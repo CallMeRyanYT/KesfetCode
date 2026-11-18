@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adventureMenu, missionMapY } from '../dist/adventure.js';
+import { adventureMenu, EXPLORER_ROUTE } from '../dist/adventure.js';
 import { normalizeProgress } from '../dist/engine.js';
 
 const options = { page: 'map', chapter: 0, world: 0, lang: 'en', progress: normalizeProgress(null), sound: true, theme: 'dark', unlockAll: true };
@@ -27,12 +27,20 @@ test('Chapter one totals exclude saved stars beyond mission fifteen', () => {
   assert.match(adventureMenu({...options, chapter: 1, progress}), /★ 5 \/ 90/);
 });
 
-test('The shorter first chapter keeps its mission markers aligned with the cropped map', () => {
-  assert.equal(missionMapY(0, 42), 0);
-  assert.equal(missionMapY(0, 100), 100);
-  assert.equal(missionMapY(1, 48), 48);
+test('Explorer fits the whole painted road and ends at the rocket launch pad', () => {
+  assert.equal(EXPLORER_ROUTE.length, 15);
   const html = adventureMenu(options);
-  assert.match(html, new RegExp(`--x:49%;--y:${missionMapY(0, 48)}%`));
+  EXPLORER_ROUTE.forEach(([x, y]) => assert.match(html, new RegExp(`--x:${x}%;--y:${y}%`)));
+  // Mission fifteen sits beside the painted KEŞFET-1 rocket in the top-right corner.
+  const [x, y] = EXPLORER_ROUTE.at(-1);
+  assert.ok(x > 80 && y < 15);
+  assert.match(html, /mission-node [^"]*node-finale"[^>]*data-level="14"/);
+  assert.match(html, /class="map-stairway"/);
+  assert.match(html, /map-layout map-layout-fitted/);
+  assert.match(html, /<aside class="map-sidepanel"><nav class="world-selector world-legend"/);
+  assert.match(html, /data-mask="\/assets\/journey-water-mask.png"/);
+  assert.match(html, /data-illustration="birds"/);
+  assert.doesNotMatch(adventureMenu({...options, chapter: 1}), /map-layout-fitted|map-stairway|node-finale/);
 });
 test('Chapter names and ages are translated and later campaign previews are identified', () => {
   const en = adventureMenu({...options,page:'chapters'});
@@ -48,7 +56,7 @@ test('Home animates the original illustration and map water has no dotted overla
   assert.doesNotMatch(home,/menu-robot scene-host/);
   const map=adventureMenu(options);
   assert.match(map,/data-illustration="water"/);
-  assert.match(map,/data-src="\/assets\/journey-terrain.png"/);
+  assert.match(map,/data-src="\/assets\/journey-terrain.webp"/);
   assert.doesNotMatch(map,/river-current|waterfall-mist/);
 });
 
@@ -60,8 +68,8 @@ test('Ice map uses snowfall without distorting frozen cliffs as flowing water',(
 
 test('Mars uses dry artwork and excludes water and birds from map and chapter card',()=>{
   const mars=adventureMenu({...options,chapter:1});
-  assert.match(mars,/\/assets\/mars-dry-terrain\.png/);
-  assert.doesNotMatch(mars,/\/assets\/mars-terrain\.png|data-illustration="water"|flying-bird/);
+  assert.match(mars,/\/assets\/mars-dry-terrain.webp/);
+  assert.doesNotMatch(mars,/\/assets\/mars-terrain.webp|data-illustration="water"|flying-bird/);
   const chapters=adventureMenu({...options,page:'chapters'});
   const inventor=chapters.match(/<article[^>]*planet-1[\s\S]*?<\/article>/)?.[0];
   assert.ok(inventor);

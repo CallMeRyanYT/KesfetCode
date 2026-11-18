@@ -52,11 +52,13 @@ function renderedFixture(t, level, reduced = false) {
     }
   });
   globalThis.document = { createElement };
+  let board;
   t.after(() => {
+    board?.detach();
     if (previousDocument === undefined) delete globalThis.document;
     else globalThis.document = previousDocument;
   });
-  const board = new Classroom2D();
+  board = new Classroom2D();
   board.setReducedMotion(reduced);
   const host = {
     prepend(root) { this.root = root; }, querySelector() { return null; },
@@ -212,7 +214,7 @@ test('Decorative props only use blocked terrain and each world has a distinct th
   }
 });
 
-test('Crystal animation artwork belongs to crystal markers, while scenery remains on blocked cells', t => {
+test('Every Explorer mission uses the painted mission-one board, props, robot and finish flag', t => {
   const grid = ['########', '########', '########', '#SC.E###', '########', '########', '########', '########'];
   const { board } = renderedFixture(t, { id: 7, world: 1, curriculum: 0, grid });
   const crystal = board.markers.find(marker => marker.tile === 'C');
@@ -222,11 +224,14 @@ test('Crystal animation artwork belongs to crystal markers, while scenery remain
   assert.ok(crystal.element.innerHTML.includes('classroom-crystal-shadow'));
   assert.ok(!exit.element.className.includes('classroom-crystal'));
   const terrain = board.plane.children.filter(child => child.dataset.walkable === 'false');
-  assert.ok(terrain.some(tile => tile.innerHTML.includes('classroom-tree-crown')));
+  assert.ok(board.root.className.includes('classroom-reference-board'));
+  assert.ok(terrain.some(tile => /level-one-(tree|bush|rock|crate)\.webp/.test(tile.innerHTML)));
+  assert.ok(terrain.every(tile => !/classroom-tree-crown|prop-(post|planter)/.test(tile.innerHTML)));
+  assert.ok(exit.element.innerHTML.includes('reference-flag'));
   const path = board.plane.children.filter(child => child.dataset.walkable === 'true');
   assert.equal(path.length, 4);
   assert.ok(path.every(tile => !tile.innerHTML.includes('classroom-terrain-prop')));
-  assert.ok(board.robot.innerHTML.includes('classroom-robot-eyes'));
+  assert.ok(board.robot.innerHTML.includes('level-one-robot.webp'));
 });
 
 test('Ambient Motion preference is applied before the board appears and survives reattachment and level changes', t => {
@@ -234,7 +239,7 @@ test('Ambient Motion preference is applied before the board appears and survives
   const { board, host } = renderedFixture(t, level, true);
   const goal = board.markers.find(marker => marker.tile === 'E');
   assert.ok(goal.element.innerHTML.includes('classroom-crystal-gem'), 'Mission one uses the original crystal artwork');
-  assert.ok(!goal.element.innerHTML.includes('level-one-crystal.png'));
+  assert.ok(!goal.element.innerHTML.includes('level-one-crystal.webp'));
   assert.equal(board.root.dataset.motion, 'off');
   assert.ok(board.markers[0].element.className.includes('classroom-crystal'), 'Opening crystal goal floats like later collectibles');
   const root = board.root;

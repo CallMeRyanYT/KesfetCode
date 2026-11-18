@@ -103,7 +103,7 @@ test('Companion markup is localized live text with a decorative, non-draggable r
   assert.match(html, /class="companion-bubble"/);
   assert.match(html, /class="companion-name">KAŞİF/);
   assert.match(html, /<p class="companion-tip">Hadi uyanalım!/);
-  assert.match(html, /class="companion-robot" src="\/assets\/mission-guide-robot\.png" alt="" aria-hidden="true" draggable="false"/);
+  assert.match(html, /class="companion-robot" src="\/assets\/mission-guide-robot.webp" alt="" aria-hidden="true" draggable="false"/);
   assert.doesNotMatch(html, /<button|tabindex|aria-live/);
   assert.deepEqual(level, snapshot);
 });
