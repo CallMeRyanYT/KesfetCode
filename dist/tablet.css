@@ -83,3 +83,6 @@ html[data-fullscreen=off] .map-sidepanel{padding-bottom:64px}
 .app-version-panel button{margin-top:8px}
 html[data-theme=dark] .app-version-panel{background:#163a52;color:#e3f3ff}
 .app-native-update.is-error{background:#fff0ee;border-color:#e2584a;color:#6a1a12}
+/* Version, bottom left on menu screens (missions keep KAŞİF in that corner). */
+.app-version-label{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom));z-index:800;padding:3px 9px;border-radius:8px;background:#02102a99;color:#d8ecff;font:600 12px/1.3 Outfit,system-ui,sans-serif;letter-spacing:.3px;pointer-events:none;-webkit-user-select:none;user-select:none}
+html[data-view=game] .app-version-label{display:none}

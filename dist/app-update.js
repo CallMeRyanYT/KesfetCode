@@ -132,3 +132,19 @@ export function startAppUpdates({ lang = () => 'en', canInterrupt = () => true, 
   document.addEventListener('visibilitychange', resume);
   return () => document.removeEventListener('visibilitychange', resume);
 }
+
+/** Short form of a game version for people: "game-dd6884be7c25" → "dd6884". */
+export const shortGame = version => String(version || 'dev').replace(/^game-/, '').slice(0, 6);
+export function versionLabel(native, game) { return `${native ? `v${native}` : 'web'} · ${shortGame(game)}`; }
+
+/** A small version label in the bottom-left corner of the menu screens. */
+export function mountVersionLabel(doc = document) {
+  const label = doc.createElement('div');
+  label.className = 'app-version-label';
+  label.setAttribute('aria-hidden', 'true');
+  doc.body.append(label);
+  const paint = native => { label.textContent = versionLabel(native, BUILD.version); };
+  paint('');
+  if (Capacitor.isNativePlatform()) registerPlugin('CapacitorUpdater').current().then(current => paint(current?.native || ''), () => {});
+  return label;
+}

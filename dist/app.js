@@ -9,7 +9,7 @@ import { PUZZLE_GEOMETRY, CONNECTED_STACK, createPuzzleWorkspace, puzzleBlockCou
 import { AmbientMusic } from './ambient.js';
 import { mountIllustrations } from './illustration-motion.js';
 import { mountTabletSupport } from './tablet.js';
-import { startAppUpdates, appUpdater } from './app-update.js';
+import { startAppUpdates, appUpdater, mountVersionLabel } from './app-update.js';
 import { storyScene, pendingBeat, readSeen, markSeen, resetSeen, STORY_BOOK } from './story.js';
 import { playScene } from './story-player.js';
 import { REACTIONS, SCENES, LINES, voicePath } from './story-script.js';
@@ -447,3 +447,4 @@ mountTabletSupport({ lang: () => document.documentElement.lang === 'tr' ? 'tr' :
 startBlinking();
 // Never reload over a child's running program; menus are safe to refresh.
 startAppUpdates({ lang: () => lang, canInterrupt: () => view === 'menu' && !running });
+mountVersionLabel();

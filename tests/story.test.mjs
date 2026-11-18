@@ -5,7 +5,7 @@ import { storyBeat, storyScene, pendingBeat, readSeen, markSeen, resetSeen, STOR
 import { LINES, SCENES, REACTIONS, voicePath } from '../dist/story-script.js';
 import { wordTimings, coverPoint, estimatedDuration } from '../dist/story-player.js';
 import { mouthShape, MOODS } from '../dist/talking-robot.js';
-import { updatePlan, compareVersions, downloadOptions } from '../dist/app-update.js';
+import { updatePlan, compareVersions, downloadOptions, versionLabel } from '../dist/app-update.js';
 import { MIN_NATIVE_VERSION } from '../scripts/build-update.mjs';
 
 const memory = () => { const data = new Map(); return { getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, String(v)), removeItem: k => data.delete(k) }; };
@@ -107,4 +107,9 @@ test('Update downloads always carry the checksum the Android updater requires', 
   // Apps from 1.0.0 cannot install updates, so the site asks them for the new APK.
   assert.equal(updatePlan({ ...manifest, minNativeVersion: MIN_NATIVE_VERSION }, { running: 'game-old', native: '1.0.0' }).action, 'native');
   assert.equal(updatePlan({ ...manifest, minNativeVersion: MIN_NATIVE_VERSION }, { running: 'game-old', native: MIN_NATIVE_VERSION }).action, 'bundle');
+});
+
+test('The version label shows the app and a short game version', () => {
+  assert.equal(versionLabel('1.0.1', 'game-dd6884be7c25'), 'v1.0.1 · dd6884');
+  assert.equal(versionLabel('', 'dev'), 'web · dev');
 });
