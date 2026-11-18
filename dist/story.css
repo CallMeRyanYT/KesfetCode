@@ -57,7 +57,7 @@ html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] 
 @keyframes story-float{50%{transform:translateY(-10px)}}
 
 /* Subtitles: speaker tag, large text, words light up as they are spoken. */
-.story-subtitle{position:absolute;left:50%;bottom:clamp(14px,3vh,30px);transform:translateX(-50%);width:min(980px,calc(100vw - 28px));min-height:96px;box-sizing:border-box;padding:26px 74px 20px 26px;border-radius:26px;background:linear-gradient(160deg,#0f3a6cf2,#06204af5);border:2px solid #7cc8ff88;box-shadow:0 10px 30px #00122d88,inset 0 1px #ffffff2a;cursor:pointer}
+.story-subtitle{position:absolute;left:50%;bottom:clamp(14px,3vh,30px);transform:translateX(-50%);width:min(980px,calc(100vw - 28px));min-height:96px;box-sizing:border-box;padding:26px 26px 20px;border-radius:26px;background:linear-gradient(160deg,#0f3a6cf2,#06204af5);border:2px solid #7cc8ff88;box-shadow:0 10px 30px #00122d88,inset 0 1px #ffffff2a;cursor:pointer}
 .story-speaker{position:absolute;left:22px;top:-17px;padding:6px 16px;border-radius:12px;font-weight:900;font-size:16px;letter-spacing:1.5px;background:#ff8a1f;color:#fff;box-shadow:0 3px 0 #a84a0c}
 .story-stage[data-speaker=nova] .story-speaker{background:#24b3ea;box-shadow:0 3px 0 #0f6a96}
 .story-stage[data-speaker=you] .story-speaker{background:#3fbf6a;box-shadow:0 3px 0 #1e7a3f}
@@ -65,9 +65,6 @@ html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] 
 .story-text span{color:#ffffff59;transition:color .12s}
 .story-text span.is-spoken{color:#fff}
 .story-stage[data-speaker=you] .story-text span{color:#d6ffe2}
-.story-next{position:absolute;right:16px;bottom:16px;width:48px;height:48px;border-radius:50%;border:0;background:#ff8a1f;color:#fff;font-size:20px;box-shadow:0 4px 0 #a84a0c;cursor:pointer}
-.story-subtitle.is-waiting .story-next{animation:story-nudge 1s ease-in-out infinite}
-@keyframes story-nudge{50%{transform:translateX(4px) scale(1.06)}}
 .story-skip{position:absolute;right:16px;top:16px;z-index:3;padding:10px 18px;border-radius:14px;border:2px solid #ffffff66;background:#04193acc;color:#fff;font:800 16px Outfit,system-ui,sans-serif;cursor:pointer}
 
 /* The child's answers: two big, friendly buttons. */
@@ -111,7 +108,7 @@ html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] 
 
 @media(max-width:760px),(max-height:520px){
   .story-cast{bottom:150px;width:min(42vw,38vh)}
-  .story-subtitle{padding:22px 64px 16px 18px;min-height:80px}
+  .story-subtitle{padding:22px 18px 16px;min-height:80px}
   .story-choices{bottom:150px;max-width:calc(100vw - 28px)}
   .story-choice{min-height:54px;padding:10px 18px}
 }

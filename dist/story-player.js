@@ -48,7 +48,7 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     <div class="story-counter" hidden>${GEM}<b>0</b><small>/ 15</small></div>
     <button class="story-skip" type="button">${t('Skip', 'Geç')} <span aria-hidden="true">⏭</span></button>
     <div class="story-choices" role="group" aria-label="${t('Your answer', 'Cevabın')}"></div>
-    <div class="story-subtitle" aria-live="polite"><span class="story-speaker"></span><p class="story-text"></p><button class="story-next" type="button" aria-label="${t('Next', 'İleri')}">▶</button></div>`;
+    <div class="story-subtitle" aria-live="polite"><span class="story-speaker"></span><p class="story-text"></p></div>`;
   document.body.append(stage);
   const robot = new TalkingRobot(stage.querySelector('.story-kasif'));
   const nova = stage.querySelector('.story-nova');
@@ -68,8 +68,8 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
   };
   // A tap first finishes the current line, then moves on.
   const tapNext = () => advance?.();
-  stage.querySelector('.story-next').addEventListener('click', tapNext);
-  subtitle.addEventListener('click', event => { if (event.target === subtitle || event.target.closest('.story-text')) tapNext(); });
+  // Tapping the caption or the scene moves the story on.
+  subtitle.addEventListener('click', tapNext);
   stage.querySelector('.story-bg').addEventListener('click', tapNext);
 
   async function sayLine(id) {
