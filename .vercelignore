@@ -1,0 +1,9 @@
+android
+node_modules
+tests
+docs
+.github
+.claude
+.sites-runtime
+.openai
+*.log
