@@ -199,3 +199,22 @@ html[data-theme=light] .adventure-shell button:focus-visible{outline-color:#ffd4
 .map-rocket-glow{position:absolute;left:89%;top:5.6%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#ffd87a88,#ff9a3a33 45%,transparent 70%);pointer-events:none;mix-blend-mode:screen}
 html[data-scenery-motion=on] .map-rocket-glow{animation:map-rocket-glow 2.8s ease-in-out infinite}
 @keyframes map-rocket-glow{50%{opacity:.45;transform:translate(-50%,-50%) scale(.85)}}
+
+/* Explorer map: mission buttons are sized from the map itself (cqw = 1% of the
+   map's width), so the 15 stops never crowd each other on any screen. */
+.map-layout-fitted .all-missions.chapter-map-0{container-type:inline-size}
+.chapter-map-0 .mission-node,.all-missions.chapter-map-0 .mission-node{width:clamp(44px,15cqw,92px);transform:translate(-50%,-72%)}
+.chapter-map-0 .mission-node:hover{transform:translate(-50%,-76%)}
+.all-missions.chapter-map-0 .node-orb{width:clamp(28px,8.6cqw,46px);height:clamp(28px,8.6cqw,46px);font-size:clamp(14px,4.6cqw,24px);border-width:2px}
+.all-missions.chapter-map-0 .node-stars{margin-top:clamp(1px,.6cqw,3px)}
+.all-missions.chapter-map-0 .node-stars i{font-size:clamp(10px,3cqw,15px)}
+.all-missions.chapter-map-0 .node-title{display:none}
+/* The title shares the top bar, giving the map the height it needs on landscape tablets. */
+@media(min-width:900px) and (orientation:landscape){
+  .adventure-map:has(.map-layout-fitted){--map-fit-height:clamp(440px,calc(100svh - 110px),1300px)}
+  .adventure-map:has(.map-layout-fitted) .map-heading{position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:3;margin:0;gap:14px;width:auto;max-width:calc(100vw - 560px)}
+  .adventure-map:has(.map-layout-fitted) .map-heading>div{padding:0;white-space:nowrap}
+  .adventure-map:has(.map-layout-fitted) .map-heading .space-eyebrow{display:none}
+  .adventure-map:has(.map-layout-fitted) .map-heading h1{font-size:clamp(20px,2.2vw,30px);margin:0}
+  .adventure-map:has(.map-layout-fitted) .map-layout-fitted{margin-top:14px}
+}
