@@ -156,6 +156,8 @@ export function mountIllustrations(root) {
       if (entry) entry.visible = item.isIntersecting;
     }
   });
+  // Screens without animated scenery (the game board) run no animation loop at all.
+  if (!root.querySelector('canvas[data-illustration]')) return () => {};
   const add = entry => { entry.visible = true; entries.push(entry); watcher?.observe(entry.canvas); entry.canvas.dataset.ready = 'true'; };
   for (const canvas of root.querySelectorAll('canvas[data-illustration]')) {
     const kind = canvas.dataset.illustration;

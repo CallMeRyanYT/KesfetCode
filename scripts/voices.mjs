@@ -9,10 +9,15 @@
 // so it is never regenerated.
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LINES } from '../dist/story-script.js';
+import { LEVELS } from '../dist/levels.js';
+import { chapterMission } from '../dist/opening-missions.js';
+import { chapterMissionCount } from '../dist/chapter-config.js';
+import { missionTip } from '../dist/mission-companion.js';
+import { hashText } from '../dist/companion-voice.js';
 
 const OUT = 'dist/assets/voice';
 const MANIFEST = join(OUT, 'voices.json');
@@ -36,14 +41,34 @@ const force = process.argv.includes('--force');
 const work = join(tmpdir(), `kesfet-voices-${process.pid}`);
 mkdirSync(work, { recursive: true });
 
+// Explorer mission tips are read aloud by KAŞİF; their files are named by the
+// text, so editing a level's tip makes a new file and the old one is removed.
+const lines = { ...LINES };
+const tips = new Set();
+for (const base of LEVELS.slice(0, chapterMissionCount(0))) {
+  const mission = chapterMission(base, 0);
+  const en = missionTip(mission, 0, 'en'), tr = missionTip(mission, 0, 'tr');
+  lines[`tip-${hashText(en)}`] = { ...(lines[`tip-${hashText(en)}`] || { who: 'kasif' }), en };
+  lines[`tip-${hashText(tr)}`] = { ...(lines[`tip-${hashText(tr)}`] || { who: 'kasif' }), tr };
+  tips.add(`en/tip-${hashText(en)}`); tips.add(`tr/tip-${hashText(tr)}`);
+}
+for (const lang of ['en', 'tr']) {
+  if (!existsSync(join(OUT, lang))) continue;
+  for (const file of readdirSync(join(OUT, lang))) {
+    const key = `${lang}/${file.replace(/\.mp3$/, '')}`;
+    if (file.startsWith('tip-') && !tips.has(key)) { rmSync(join(OUT, lang, file)); delete manifest.lines[key]; console.log(`Removed outdated ${key}`); }
+  }
+}
+
 const jobs = [];
-for (const [id, line] of Object.entries(LINES)) {
+for (const [id, line] of Object.entries(lines)) {
   if (line.who === 'you') continue;
   for (const lang of ['en', 'tr']) {
     const key = `${lang}/${id}`;
     if (manifest.recorded?.includes(key) || manifest.recorded?.includes(id)) continue;
     const setup = CAST[line.who][lang];
     const text = line[lang];
+    if (!text) continue;
     const signature = createHash('sha1').update(JSON.stringify([text, setup, CAST[line.who].filter])).digest('hex').slice(0, 12);
     const out = join(OUT, lang, `${id}.mp3`);
     if (!force && manifest.lines[key] === signature && existsSync(out)) continue;
@@ -54,7 +79,7 @@ if (!jobs.length) { console.log('All voice lines are up to date.'); process.exit
 
 writeFileSync(join(work, 'jobs.json'), JSON.stringify(jobs.map(job => ({ text: job.text, voice: job.setup.voice, lang: LANG[job.lang], rate: job.setup.rate, out: job.wav }))), 'utf8');
 console.log(`Speaking ${jobs.length} lines…`);
-execFileSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolve('scripts/tts.ps1'), '-Jobs', join(work, 'jobs.json')], { stdio: 'inherit' });
+execFileSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolve('scripts/tts.ps1'), '-Jobs', join(work, 'jobs.json')], { stdio: ['ignore', 'inherit', 'inherit'], timeout: 10 * 60 * 1000 });
 
 for (const job of jobs) {
   mkdirSync(join(OUT, job.lang), { recursive: true });

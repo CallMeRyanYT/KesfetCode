@@ -105,7 +105,6 @@ test('Companion markup is localized live text with a decorative, non-draggable r
   assert.match(html, /<p class="companion-tip">Hadi uyanalım!/);
   assert.match(html, /class="companion-robot"><span class="talking-robot [^"]*" data-mood="happy" data-talking-robot aria-hidden="true">/);
   assert.match(html, /<img class="talking-robot-img" src="\/assets\/kasif-talking.webp" alt="" draggable="false">/);
-  assert.match(html, /class="companion-reaction" aria-hidden="true"/);
   assert.doesNotMatch(html, /<button|tabindex|aria-live/);
   assert.deepEqual(level, snapshot);
 });

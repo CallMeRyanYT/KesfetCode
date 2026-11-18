@@ -269,9 +269,10 @@ export function isUnlocked(progress, index) {
     (index === 0 || normalizeProgress(progress).stars[index - 1] > 0);
 }
 
-export function completeLevel(progress, index, score, crystalCount = 0) {
+export function completeLevel(progress, index, score, crystalCount = 0, { force = false } = {}) {
   const result = normalizeProgress(progress);
-  if (isUnlocked(result, index)) {
+  // `force` saves a mission opened out of order (all missions open for testing).
+  if (force || isUnlocked(result, index)) {
     const safeScore = Number.isFinite(score) ? Math.max(1, Math.min(3, Math.floor(score))) : 1;
     const total = LEVELS[index].grid.join('').split('C').length - 1;
     const safeCrystals = Number.isFinite(crystalCount) ? Math.max(0, Math.min(total, Math.floor(crystalCount))) : 0;

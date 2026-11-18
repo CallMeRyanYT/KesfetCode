@@ -1,6 +1,6 @@
 /* ---------- Talking KAŞİF ---------- */
 .talking-robot{position:relative;display:inline-block;aspect-ratio:1142/1377;line-height:0}
-.talking-robot-body{position:relative;display:block;width:100%;height:100%;transform-origin:50% 92%}
+.talking-robot-body{position:relative;display:block;width:100%;height:100%;transform-origin:50% 92%;will-change:transform}
 .talking-robot-img,.tr-face{position:absolute;inset:0;width:100%;height:100%}
 .tr-face{overflow:visible}
 .tr-eye-open,.tr-eye-happy{transform-box:fill-box;transform-origin:50% 50%;transition:opacity .15s,transform .2s}
@@ -13,10 +13,9 @@
 .talking-robot[data-mood=thinking] .tr-look{transform:translate(18px,-16px);transition:transform .3s}
 .talking-robot[data-mood=sad] .tr-eye-open{transform:scaleY(.62) translateY(10px)}
 .tr-look{transition:transform .3s}
-/* Idle life: blinking and a soft breathing bob, without JavaScript. */
-.tr-eye .tr-eye-open{animation:tr-blink 4.2s infinite}
-@keyframes tr-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
-.talking-robot[data-mood=surprised] .tr-eye .tr-eye-open{animation:none}
+/* Idle life: a timed blink (see startBlinking) and a soft breathing bob that
+   only moves the composited body layer. */
+.talking-robot.is-blinking:not([data-mood=surprised]) .tr-eye .tr-eye-open{transform:scaleY(.08);transition-duration:.06s}
 .talking-robot-body{animation:tr-breathe 2.6s ease-in-out infinite}
 @keyframes tr-breathe{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-1.5%) scale(.985,1.015)}}
 .talking-robot.is-talking .talking-robot-body{animation:tr-talk .42s ease-in-out infinite}
@@ -32,12 +31,12 @@
 @keyframes tr-nod{0%,100%{transform:rotate(0)}30%{transform:rotate(4deg) translateY(2%)}60%{transform:rotate(-2deg)}}
 .talking-robot-body.tr-lean{animation:tr-lean 1.1s ease-in-out!important}
 @keyframes tr-lean{0%,100%{transform:rotate(0)}40%,70%{transform:rotate(-7deg) translateX(-2%)}}
-html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] .tr-eye .tr-eye-open{animation:none!important}
+html[data-scenery-motion=off] .talking-robot-body{animation:none!important}
 
 /* ---------- Story stage ---------- */
 .story-stage{position:fixed;inset:0;z-index:1200;overflow:hidden;background:#061a3b;color:#fff;font-family:Outfit,system-ui,sans-serif;opacity:0;transition:opacity .35s;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .story-stage.is-open{opacity:1}
-.story-bg{position:absolute;inset:-3%;background:#123 center/cover no-repeat;animation:story-drift 26s ease-in-out infinite alternate}
+.story-bg{position:absolute;inset:-3%;background:#123 center/cover no-repeat;animation:story-drift 26s ease-in-out infinite alternate;will-change:transform}
 @keyframes story-drift{from{transform:scale(1.04) translate(0,0)}to{transform:scale(1.1) translate(-1.5%,-1%)}}
 .story-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 50%,#02102a99 100%),linear-gradient(transparent 55%,#02102acc);pointer-events:none}
 .story-cast{position:absolute;left:clamp(8px,6vw,90px);bottom:clamp(120px,22vh,210px);width:min(34vw,44vh,420px);pointer-events:none}
@@ -119,8 +118,6 @@ html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] 
 
 /* ---------- In-mission companion reactions ---------- */
 .mission-companion .talking-robot{display:block;width:100%}
-.companion-reaction{position:absolute;right:-6px;top:22%;z-index:3;max-width:190px;padding:8px 14px;border-radius:16px 16px 16px 4px;background:#fff;color:#18405a;font-weight:800;font-size:16px;line-height:1.25;box-shadow:0 4px 12px #0003;border:2px solid #ffb238;opacity:0;transform:scale(.6);transform-origin:0 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.5,.5,1);pointer-events:none}
-.companion-reaction.is-shown{opacity:1;transform:scale(1)}
 
 /* ---------- Story book (replay finished scenes) ---------- */
 .story-book{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:14px}
@@ -133,3 +130,13 @@ html[data-scenery-motion=off] .talking-robot-body,html[data-scenery-motion=off] 
 /* No empty caption box before the first line is spoken. */
 .story-subtitle:has(.story-text:empty){opacity:0;pointer-events:none}
 .story-subtitle{transition:opacity .25s}
+.mission-companion.is-speaking .companion-bubble{box-shadow:0 0 0 3px #ffb23866,0 6px 16px #0003}
+
+/* ---------- Success stars: collected before vs. new ---------- */
+.success-stars .icon.is-collected{color:#c9a54a;opacity:.55}
+.success-stars .icon.is-new{animation:star-new .7s cubic-bezier(.3,1.6,.5,1) .15s both}
+@keyframes star-new{0%{transform:scale(0) rotate(-40deg)}100%{transform:scale(1)}}
+.success-stars .icon:nth-child(2).is-new{animation-name:star-new-mid}
+@keyframes star-new-mid{0%{transform:translateY(-5px) scale(0) rotate(-40deg)}100%{transform:translateY(-5px) scale(1)}}
+.success-star-note{margin:-10px 0 14px;font-size:14px;font-weight:700;color:#6c7f8f;text-align:center}
+.success-star-note.is-new{color:#c47a00}

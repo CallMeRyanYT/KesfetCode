@@ -20,12 +20,14 @@ export function mouthShape(mood = 'neutral', open = 0) {
   }
 }
 
-const EYE = `<rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="22" stroke-linecap="round"/>`;
+// Each feature has a wide, faint copy underneath: a glow without an SVG blur
+// filter, so the face never has to be re-filtered while it animates.
+const EYE = `<rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28" stroke-width="26" fill-opacity=".25" stroke-opacity=".22"/><rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="46" stroke-opacity=".22" stroke-linecap="round"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="22" stroke-linecap="round"/>`;
 
 /** Markup for a talking KAŞİF. `id` keeps SVG filter ids unique on a page. */
 export function talkingRobotMarkup({ mood = 'neutral', className = '', id = 'tr' } = {}) {
   const rest = mouthShape(mood);
-  return `<span class="talking-robot ${className}" data-mood="${mood}" data-talking-robot aria-hidden="true"><span class="talking-robot-body"><img class="talking-robot-img" src="/assets/kasif-talking.webp" alt="" draggable="false"><svg class="tr-face" viewBox="0 0 1142 1377" aria-hidden="true"><defs><filter id="${id}-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M392 168Q560 120 760 110Q770 140 750 160Q560 170 405 222Z" fill="url(#${id}-gloss)"/><g transform="rotate(-10 590 315)"><g class="tr-blush" fill="#ff6f9c"><ellipse cx="420" cy="352" rx="44" ry="20"/><ellipse cx="760" cy="350" rx="44" ry="20"/></g><g filter="url(#${id}-glow)" fill="#ffd23f" stroke="#ffd23f"><g class="tr-look"><g class="tr-eye" transform="translate(477 276)">${EYE}</g><g class="tr-eye" transform="translate(703 275)">${EYE}</g></g><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></span></span>`;
+  return `<span class="talking-robot ${className}" data-mood="${mood}" data-talking-robot aria-hidden="true"><span class="talking-robot-body"><img class="talking-robot-img" src="/assets/kasif-talking.webp" alt="" draggable="false"><svg class="tr-face" viewBox="0 0 1142 1377" aria-hidden="true"><defs><linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M392 168Q560 120 760 110Q770 140 750 160Q560 170 405 222Z" fill="url(#${id}-gloss)"/><g transform="rotate(-10 590 315)"><g class="tr-blush" fill="#ff6f9c"><ellipse cx="420" cy="352" rx="44" ry="20"/><ellipse cx="760" cy="350" rx="44" ry="20"/></g><g fill="#ffd23f" stroke="#ffd23f"><g class="tr-look"><g class="tr-eye" transform="translate(477 276)">${EYE}</g><g class="tr-eye" transform="translate(703 275)">${EYE}</g></g><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="42" stroke-opacity=".2" stroke-linecap="round" stroke-linejoin="round"/><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></span></span>`;
 }
 
 let sharedContext = null;
@@ -45,7 +47,11 @@ export function voiceMeter(audio) {
     const source = ctx.createMediaElementSource(audio);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
-    source.connect(analyser); analyser.connect(ctx.destination);
+    // A little headroom and a limiter: voices mixed with sound effects never clip.
+    const gain = ctx.createGain(); gain.gain.value = .82;
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 12; limiter.attack.value = .003; limiter.release.value = .2;
+    source.connect(analyser); source.connect(gain); gain.connect(limiter); limiter.connect(ctx.destination);
     const samples = new Uint8Array(analyser.fftSize);
     return () => {
       analyser.getByteTimeDomainData(samples);
@@ -60,7 +66,7 @@ export function voiceMeter(audio) {
 export class TalkingRobot {
   constructor(root) {
     this.root = root;
-    this.mouth = root.querySelector('.tr-mouth');
+    this.mouths = [...root.querySelectorAll('.tr-mouth')];
     this.mood = root.dataset.mood || 'neutral';
     this.level = 0;
     this.frame = 0;
@@ -72,8 +78,10 @@ export class TalkingRobot {
   }
   setMouth(open) {
     const shape = mouthShape(this.mood, open);
-    this.mouth.setAttribute('d', shape.d);
-    this.mouth.setAttribute('fill', shape.filled ? '#2a1600' : 'none');
+    for (const mouth of this.mouths) {
+      mouth.setAttribute('d', shape.d);
+      mouth.setAttribute('fill', shape.filled ? '#2a1600' : 'none');
+    }
   }
   act(name) {
     if (!ACTIONS.includes(name)) return;
@@ -107,4 +115,23 @@ export class TalkingRobot {
     this.root.classList.remove('is-talking');
     this.setMouth(0);
   }
+}
+
+let blinkTimer = 0;
+/**
+ * Makes every talking robot on the page blink every few seconds. Blinks are a
+ * short class toggle, so nothing animates (or repaints) between blinks.
+ */
+export function startBlinking(doc = document) {
+  if (blinkTimer) return;
+  const blink = () => {
+    if (!doc.hidden && doc.documentElement.dataset.sceneryMotion !== 'off') {
+      for (const robot of doc.querySelectorAll('[data-talking-robot]')) {
+        robot.classList.add('is-blinking');
+        setTimeout(() => robot.classList.remove('is-blinking'), 140);
+      }
+    }
+    blinkTimer = setTimeout(blink, 3200 + Math.random() * 2600);
+  };
+  blinkTimer = setTimeout(blink, 2000);
 }

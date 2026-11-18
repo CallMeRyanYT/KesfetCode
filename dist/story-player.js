@@ -246,25 +246,3 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     run.then(() => wait(scene.short ? 200 : 600)).then(close);
   });
 }
-
-/** A short voiced reaction from the in-mission companion robot. */
-export function companionSay(id, { lang = 'en', voice = true, host = document } = {}) {
-  const line = LINES[id];
-  const root = host.querySelector?.('.mission-companion [data-talking-robot]');
-  if (!line || !root) return;
-  const robot = new TalkingRobot(root);
-  robot.setMood(line.mood || 'happy');
-  const text = lang === 'tr' ? line.tr : line.en;
-  const bubble = host.querySelector('.mission-companion .companion-reaction');
-  if (bubble) { bubble.textContent = text; bubble.classList.remove('is-shown'); void bubble.offsetWidth; bubble.classList.add('is-shown'); }
-  let meter = null, duration = estimatedDuration(text);
-  if (voice) {
-    const audio = new Audio(voicePath(id, lang));
-    audio.addEventListener('loadedmetadata', () => { if (Number.isFinite(audio.duration)) duration = audio.duration * 1000; }, { once: true });
-    meter = voiceMeter(audio);
-    audio.play().catch(() => {});
-  }
-  robot.talk({ meter, duration });
-  clearTimeout(root._reactionTimer);
-  root._reactionTimer = setTimeout(() => { robot.stopTalking(); robot.setMood('neutral'); bubble?.classList.remove('is-shown'); }, Math.max(1600, duration + 400));
-}

@@ -160,5 +160,5 @@ export function missionTip(mission, chapterIndex, lang = 'en') {
 
 export function missionCompanionMarkup(mission, chapterIndex, lang = 'en') {
   const guideLabel = lang === 'tr' ? 'KAŞİF’in görev ipucu' : 'KAŞİF’s mission tip';
-  return `<aside class="mission-companion" aria-label="${escapeHTML(guideLabel)}"><div class="companion-bubble"><span class="companion-name">KAŞİF</span><p class="companion-tip">${escapeHTML(missionTip(mission, chapterIndex, lang))}</p></div><span class="companion-robot">${talkingRobotMarkup({ mood: 'happy', id: 'companion' })}<span class="companion-reaction" aria-hidden="true"></span></span></aside>`;
+  return `<aside class="mission-companion" aria-label="${escapeHTML(guideLabel)}"><div class="companion-bubble"><span class="companion-name">KAŞİF</span><p class="companion-tip">${escapeHTML(missionTip(mission, chapterIndex, lang))}</p></div><span class="companion-robot">${talkingRobotMarkup({ mood: 'happy', id: 'companion' })}</span></aside>`;
 }
