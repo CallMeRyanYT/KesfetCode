@@ -5,7 +5,8 @@ import { storyBeat, storyScene, pendingBeat, readSeen, markSeen, resetSeen, STOR
 import { LINES, SCENES, REACTIONS, voicePath } from '../dist/story-script.js';
 import { wordTimings, coverPoint, estimatedDuration } from '../dist/story-player.js';
 import { mouthShape, MOODS } from '../dist/talking-robot.js';
-import { updatePlan, compareVersions } from '../dist/app-update.js';
+import { updatePlan, compareVersions, downloadOptions } from '../dist/app-update.js';
+import { MIN_NATIVE_VERSION } from '../scripts/build-update.mjs';
 
 const memory = () => { const data = new Map(); return { getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, String(v)), removeItem: k => data.delete(k) }; };
 
@@ -96,4 +97,14 @@ test('The Android updater installs new game files, or asks for a new app when ne
   assert.deepEqual(updatePlan(manifest, { running: 'old', native: '1.0.0' }), { action: 'bundle', version: 'abc' });
   assert.deepEqual(updatePlan({ ...manifest, minNativeVersion: '2.0.0' }, { running: 'old', native: '1.4.0' }), { action: 'native', url: 'https://example.test/apk' });
   assert.deepEqual(updatePlan(null), { action: 'none' });
+});
+
+test('Update downloads always carry the checksum the Android updater requires', () => {
+  const manifest = { version: 'game-abc123', url: '/app-update/kesfet-code-game-abc123.zip', sha256: 'f'.repeat(64) };
+  assert.deepEqual(downloadOptions(manifest, 'https://kesfetcode.vercel.app/app-update.json'), {
+    url: 'https://kesfetcode.vercel.app/app-update/kesfet-code-game-abc123.zip', version: 'game-abc123', checksum: 'f'.repeat(64)
+  });
+  // Apps from 1.0.0 cannot install updates, so the site asks them for the new APK.
+  assert.equal(updatePlan({ ...manifest, minNativeVersion: MIN_NATIVE_VERSION }, { running: 'game-old', native: '1.0.0' }).action, 'native');
+  assert.equal(updatePlan({ ...manifest, minNativeVersion: MIN_NATIVE_VERSION }, { running: 'game-old', native: MIN_NATIVE_VERSION }).action, 'bundle');
 });

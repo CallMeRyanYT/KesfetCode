@@ -76,3 +76,10 @@ html[data-fullscreen=off] .map-sidepanel{padding-bottom:64px}
 /* The companion breathes on its own layer; a filter around it would be redone every frame. */
 .mission-companion .companion-robot{filter:none!important}
 .mission-companion .companion-robot::after{content:'';position:absolute;left:18%;right:18%;bottom:2%;height:5%;border-radius:50%;background:#2b1a0e40;z-index:-1}
+.app-version-panel{margin-top:16px;padding:12px 14px;border-radius:14px;background:#eef6fb;color:#22445a;font-size:14px;line-height:1.45}
+.app-version-panel h3{margin:0 0 4px;font-size:15px}
+.app-version-panel p{margin:2px 0}
+.app-version-panel small{opacity:.7}
+.app-version-panel button{margin-top:8px}
+html[data-theme=dark] .app-version-panel{background:#163a52;color:#e3f3ff}
+.app-native-update.is-error{background:#fff0ee;border-color:#e2584a;color:#6a1a12}

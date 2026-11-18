@@ -16,7 +16,8 @@ const ROOT = 'dist';
 const UPDATE_DIR = 'app-update';
 // Raise this (and tag a matching APK release) whenever the native Android
 // shell changes in a way new web code depends on, such as a new plugin.
-export const MIN_NATIVE_VERSION = '1.0.0';
+// 1.0.1: 1.0.0's updater sent no checksum, so it can never install an update.
+export const MIN_NATIVE_VERSION = '1.0.1';
 const GENERATED = new Set(['build-info.js', 'app-update.json']);
 const skip = path => path.startsWith(`${UPDATE_DIR}/`) || GENERATED.has(path) || path.endsWith('.prompt.txt');
 
@@ -33,7 +34,8 @@ async function files(dir = ROOT) {
 export async function contentVersion(list) {
   const hash = createHash('sha256');
   for (const path of list) hash.update(path).update('\0').update(await readFile(join(ROOT, path))).update('\0');
-  return hash.digest('hex').slice(0, 12);
+  // A clearly non-numeric name, so the updater never mistakes it for an app version.
+  return `game-${hash.digest('hex').slice(0, 12)}`;
 }
 
 // A minimal ZIP writer: no dependencies, so Vercel needs no npm install.
@@ -99,7 +101,7 @@ async function main() {
     size: archive.length,
     sha256: createHash('sha256').update(archive).digest('hex'),
     minNativeVersion: MIN_NATIVE_VERSION,
-    apkUrl: 'https://github.com/CallMeRyanYT/KesfetCode/releases/latest'
+    apkUrl: 'https://github.com/CallMeRyanYT/KesfetCode/releases/latest/download/KesfetCode.apk'
   };
   await writeFile(join(ROOT, 'app-update.json'), JSON.stringify(manifest, null, 2));
   console.log(`Update bundle ${bundle}: ${(archive.length / 1e6).toFixed(1)} MB.`);
