@@ -67,3 +67,90 @@ html[data-theme=light] .play-page .mission-panel,html[data-theme=light] .play-pa
 /* Center the coding panels without stretching across the entire scene. */
 .play-page .coding-deck{width:min(100%,900px);justify-self:center}
 
+/* A bright badge keeps the orange lab artwork readable over every world. */
+.play-brand{justify-self:start;width:146px;max-width:100%;padding:8px 12px;background:linear-gradient(145deg,#fffef9,#f4ead5);border:1px solid #d5b780;border-radius:16px;box-shadow:0 4px 0 #77562e55,0 7px 18px #173b4933}
+.play-brand:hover{background:#fff;box-shadow:0 4px 0 #77562e55,0 7px 18px #173b4955}
+.play-brand .lab-lockup{width:120px;filter:none}
+.play-brand .lab-lockup>img{width:76px;filter:none}
+.play-brand .lab-lockup .lab-product{font-size:18px;margin-top:4px;color:#183e53;text-shadow:none}
+.play-brand .lab-lockup .lab-product b{color:#b85500}
+.play-brand em{margin-top:7px;color:#315565;font-size:11px}
+@media(max-width:760px){.play-brand{width:128px;padding:7px 9px}.play-brand .lab-lockup>img{width:65px}.play-brand .lab-lockup .lab-product{font-size:16px}.play-brand em{font-size:10px}}
+@media(max-width:420px){.play-brand{width:105px;padding:6px 7px}.play-brand .lab-lockup>img{width:58px}.play-brand .lab-lockup .lab-product{font-size:14px}.play-brand em{font-size:9px;letter-spacing:0}}
+@media(min-width:761px) and (max-height:850px){.play-page.first-mission .play-layout{grid-template-rows:minmax(230px,33vh) auto}}
+.play-page .mission-feedback{grid-column:1/-1;padding:9px 11px;border-radius:9px;background:#4b3326eb;color:#ffdab3;line-height:1.5;border:1px solid #c58b58}
+.play-page .mission-feedback[hidden]{display:none}
+.play-page .mission-hud:empty{display:none}
+html[data-view=game][data-theme=light]{background:#e1eef2}
+html[data-theme=light] .play-page .play-tools button,
+html[data-theme=light] .play-page .scene-tag,
+html[data-theme=light] .play-page .hud-chip,
+html[data-theme=light] .play-page .camera-tools{background:#eff9f3e0;color:#23495d;border-color:#b7d5da;box-shadow:0 3px 10px #28495b20;backdrop-filter:blur(5px)}
+html[data-theme=light] .play-page .camera-tools button{color:#23495d}
+html[data-theme=light] .play-page .play-tools button:hover,
+html[data-theme=light] .play-page .camera-tools button:hover{background:#fff}
+html[data-theme=light] .play-page .program-scroll{background:#f5fff952;border-color:#85b1be}
+html[data-theme=light] .play-page .block-delete{background:#eef9f5;color:#294f61;border-color:#497689}
+html[data-theme=light] .play-page .block-delete:hover{background:#ffe6dc;color:#9c4022}
+html[data-theme=light] .play-page .program-item.repeat-group{background:#e6f5ba80;border-color:#739c40}
+html[data-theme=light] .play-page .group-add{background:#f2ffe1c9;color:#31522b;border-color:#7c9e51}
+html[data-theme=light] .play-page .drop-target{background:#f7fff594;color:#294e60}
+html[data-theme=light] .play-page .dock-heading .icon-button{background:#eaf7f0d9;color:#385e70}
+html[data-theme=light] .play-page .mission-panel .secondary{background:#f0faf4d9;color:#28566a;border-color:#7da8b8}
+html[data-theme=light] .play-page .play-hint{background:#f3fbefd9;color:#284b5f;border-radius:10px;padding:10px}
+html[data-theme=light] .play-page .mission-feedback{background:#fff3df;color:#7d461d;border-color:#d1a56c}
+html[data-theme=light] .play-page .play-stage>.scene-wrap{background:linear-gradient(#f5fff512,#d8edf520)}
+
+/* Only the opening mission uses a two-step, player-controlled guide. */
+.first-mission-tip{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #86dcea;border-radius:14px;background:#083449ec;color:#effbff;box-shadow:0 3px 12px #001a3225}
+.first-mission-tip p{flex:1;margin:0;font-size:13px;line-height:1.5}
+.tip-number{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:50%;background:#ffda47;color:#513a0c;font-weight:800}
+.first-mission-tip>button{flex:0 0 28px;height:28px;background:transparent;color:inherit;font-size:23px;border-radius:50%}
+.first-mission-tip>button:hover{background:#ffffff20}
+html[data-theme=light] .first-mission-tip{background:#f5fff4ed;color:#244c5f;border-color:#9ec8ce}
+.tip-visual{position:fixed;inset:0;z-index:40;pointer-events:none;overflow:hidden}
+.tip-visual[hidden]{display:none}
+.tip-ghost{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:62px;height:60px;gap:3px;border:2px solid #e4fdff;border-bottom:5px solid #007889;border-radius:9px;background:linear-gradient(#19d4dd,#07a4ba);color:white;font-size:10px;box-shadow:0 5px 12px #123f6b40;animation:tip-drag-block 4.2s ease-in-out infinite!important}
+.tip-ghost .icon{width:25px;height:25px;stroke-width:3}
+.tip-hand{position:absolute;left:0;top:0;width:52px;height:60px;filter:drop-shadow(0 3px 2px #0e395655);animation:tip-drag-hand 4.2s ease-in-out infinite!important}
+.tip-hand svg{width:100%;height:100%;overflow:visible}
+.tip-hand path{fill:#fff;stroke:#368fa5;stroke-width:4;stroke-linejoin:round}
+.tip-touch{fill:none;stroke:#69d7ed;stroke-width:4;opacity:0;animation:tip-touch 4.2s ease-in-out infinite!important}
+.play-page .tip-source,.play-page .tip-target{outline:3px solid #fff2a0;outline-offset:4px}
+[data-guide-step=run] .tip-ghost{display:none}
+[data-guide-step=run] .tip-hand{animation:tip-point 2s ease-in-out infinite!important}
+[data-guide-step=run] .tip-touch{animation:tip-tap 2s ease-in-out infinite!important}
+@keyframes tip-drag-block{0%,8%{transform:translate(var(--from-x),var(--from-y));opacity:0}12%{transform:translate(var(--from-x),var(--from-y));opacity:.92}55%,80%{transform:translate(var(--to-x),var(--to-y));opacity:.92}90%,100%{transform:translate(var(--to-x),var(--to-y));opacity:0}}
+@keyframes tip-drag-hand{0%,12%{transform:translate(calc(var(--from-x) + 19px),calc(var(--from-y) + var(--hand-offset-y,19px)));opacity:1}55%,80%{transform:translate(calc(var(--to-x) + 19px),calc(var(--to-y) + var(--hand-offset-y,19px)));opacity:1}90%,100%{transform:translate(calc(var(--to-x) + 19px),calc(var(--to-y) + var(--hand-offset-y,19px)));opacity:0}}
+@keyframes tip-touch{0%,16%,50%,85%,100%{opacity:0}8%,12%,58%,70%{opacity:1}}
+@keyframes tip-point{0%,100%{transform:translate(calc(var(--from-x) + 15px),calc(var(--from-y) + var(--hand-offset-y,19px) - 5px))}50%{transform:translate(calc(var(--from-x) + 15px),calc(var(--from-y) + var(--hand-offset-y,19px)))}}
+@keyframes tip-tap{0%,30%,100%{opacity:0}50%,75%{opacity:1}}
+/* The explicitly requested teaching demonstration remains animated even when
+   reduced-motion styling disables decorative animations elsewhere. */
+.opening-mission .first-block-slot{display:grid;place-items:center;flex:0 0 62px;width:62px;height:60px;border:2px dashed #59d6e6;border-radius:9px;background:#21afc32b;color:#e2fcff;font-size:10px;text-align:center;cursor:default}
+html[data-theme=light] .opening-mission .first-block-slot{color:#246376;background:#e9fff29e}
+.opening-mission .drop-target{display:none}
+@media(max-width:600px){.first-mission-tip{gap:9px;padding:9px 10px}.first-mission-tip p{font-size:12px}}
+
+
+.opening-mission .mission-coach,.opening-mission .collect-instruction{display:none}
+
+/* The same classroom artwork runs through the whole first chapter. */
+.play-page.play-chapter-0{--chapter-scene:url('/assets/chapter-one-classroom.png');background:linear-gradient(#19263830,#19263830),var(--chapter-scene) center/cover fixed}
+html[data-theme=light] .play-page.play-chapter-0{background:linear-gradient(#fff7e50d,#fff7e50d),var(--chapter-scene) center/cover fixed}
+.play-chapter-0.play-world-2{--chapter-scene:url('/assets/chapter-one-training.png')}
+.play-chapter-0.play-world-3{--chapter-scene:url('/assets/chapter-one-valley.png')}
+.play-chapter-0.play-world-4{--chapter-scene:url('/assets/chapter-one-energy.png')}
+.play-chapter-0.play-world-5{--chapter-scene:url('/assets/chapter-one-robot-base.png')}
+.play-chapter-0.play-world-6{--chapter-scene:url('/assets/chapter-one-launch.png')}
+.play-page.play-chapter-0 .play-layout{grid-template-rows:minmax(400px,55vh) auto}
+@media(max-width:760px){.play-page.play-chapter-0 .play-layout{grid-template-rows:390px auto auto}}
+.play-page.two-d-mission .play-stage>.scene-wrap{background:transparent!important;overflow:visible}
+.two-d-mission .scene-bottomline:empty{display:none}
+html[data-theme=light] .play-page.play-chapter-0 .mission-panel,
+html[data-theme=light] .play-page.play-chapter-0 .program-dock,
+html[data-theme=light] .play-page.play-chapter-0 .play-palette{background:linear-gradient(135deg,#fffaf0ed,#f8edd9e6);border-color:#c6a16f;box-shadow:0 4px 12px #5f3b2020}
+html[data-theme=light] .play-page.play-chapter-0 .program-scroll{background:#f7ebd582;border-color:#cfb992}
+html[data-theme=light] .play-page.play-chapter-0 .dock-heading .icon-button{background:#eadac3;color:#705335}
+html[data-theme=light] .play-page.play-chapter-0 .mission-panel .secondary{background:#fff8ec;color:#654629;border-color:#ceb390}
+html[data-theme=light] .play-page.play-chapter-0 .scene-tag{background:#fff8eceb;color:#59422b;border-color:#ceb390}

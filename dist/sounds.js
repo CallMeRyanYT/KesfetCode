@@ -1,5 +1,5 @@
 // Original, gently voiced sound effects generated locally; no audio downloads.
-// Each note is [frequency, start offset, duration, ending frequency, waveform].
+// Each note is [frequency, start offset, duration, ending frequency, waveform, peak].
 export const CUES = {
   block: [[1800, 0, .04, 550, 'triangle']],
   run: [[440, 0, .13], [660, .10, .18]],
@@ -19,7 +19,8 @@ export const CUES = {
   error: [[262, 0, .18, 220, 'triangle'], [175, .17, .25, 147, 'triangle']],
   collect: [[784, 0, .14], [988, .09, .15], [1319, .18, .22]],
   success: [[523, 0, .19], [659, .14, .19], [784, .28, .19], [1047, .44, .5]],
-  complete: [[523, 0, .18], [659, .13, .18], [784, .26, .18], [1047, .40, .23], [988, .63, .18], [1175, .79, .2], [1568, .98, .55]],
+  // A short, bouncy fanfare, ending in a soft major chord.
+  complete: [[523, 0, .10, 523, 'triangle', .12], [523, .13, .10, 523, 'triangle', .12], [659, .26, .13, 659, 'triangle', .12], [784, .40, .16, 784, 'triangle', .12], [1047, .58, .50, 1047, 'triangle', .10], [659, .58, .50, 659, 'sine', .08], [784, .58, .50, 784, 'sine', .08]],
   reset: [[660, 0, .1, 440], [440, .09, .12, 330]],
   on: [[660, 0, .12], [880, .1, .2]]
 };
@@ -72,7 +73,7 @@ export class SoundEffects {
       if (!this.enabled || generation !== this.generation) return false;
       if (this.context.state !== 'running') { this.onStatus('blocked'); return false; }
       const start = this.context.currentTime + .01;
-      for (const [frequency, offset, duration, ending = frequency, waveform = 'sine'] of CUES[name]) {
+      for (const [frequency, offset, duration, ending = frequency, waveform = 'sine', peak = .22] of CUES[name]) {
         const oscillator = this.context.createOscillator();
         const gain = this.context.createGain();
         const at = start + offset;
@@ -82,8 +83,8 @@ export class SoundEffects {
         gain.gain.setValueAtTime(.0001, at);
         // A brief sustain makes the notes audible on laptop and phone speakers.
         // The old envelope immediately faded from a very low peak.
-        gain.gain.linearRampToValueAtTime(.22, at + .008);
-        gain.gain.setValueAtTime(.22, at + duration * .55);
+        gain.gain.linearRampToValueAtTime(peak, at + .008);
+        gain.gain.setValueAtTime(peak, at + duration * .55);
         gain.gain.linearRampToValueAtTime(.0001, at + duration);
         oscillator.connect(gain);
         gain.connect(this.context.destination);

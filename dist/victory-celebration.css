@@ -1,0 +1,6 @@
+/* Fixed inside the modal so the burst sits above its backdrop, across the air. */
+.victory-confetti{position:fixed;inset:0;z-index:10;overflow:hidden;pointer-events:none;contain:strict}
+.victory-confetti-piece{position:absolute;left:var(--confetti-origin);bottom:-16px;display:block;width:var(--confetti-size);height:calc(var(--confetti-size)*1.55);background:var(--confetti-color);border-radius:2px;opacity:0;will-change:transform}
+.victory-confetti-piece:nth-child(3n){border-radius:50%;height:var(--confetti-size)}
+.victory-confetti-piece:nth-child(5n){width:calc(var(--confetti-size)*.65);height:calc(var(--confetti-size)*2)}
+.victory-confetti.is-still .victory-confetti-piece{left:var(--confetti-still-x);top:var(--confetti-still-y);bottom:auto;opacity:.9;animation:none;will-change:auto;transform:rotate(var(--confetti-spin))}

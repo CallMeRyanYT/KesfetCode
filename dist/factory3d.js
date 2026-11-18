@@ -6,6 +6,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { robotPose, MOVE_MS, TURN_MS, PICKUP_MS, PICKUP_EVENTS, WIN_MS, LAUNCH_MS, COUNTDOWN_MS, PRESS_MS, IMPACT_MS, pickupProgress, launchStage } from './robot-motion.js';
 import { createRobotFace } from './robot-face.js';
 import { createRobotRig, createDriveRig, straightenRobotHead } from './robot-rig.js';
+import { isOpeningMission } from './opening-missions.js';
 
 const TILE = 1.28;
 const ease = t => t * t * (3 - 2 * t);
@@ -184,7 +185,7 @@ export class Factory3D {
     host.prepend(this.renderer.domElement);
     this.resizeObserver.disconnect();
     this.resizeObserver.observe(host);
-    if (this.mode !== mode || (mode === 'game' && this.levelId !== level.id)) {
+    if (this.mode !== mode || (mode === 'game' && (this.levelId !== level.id || this.level?.curriculum !== level.curriculum))) {
       this.mode = mode;
       this.levelId = level?.id;
       this.buildWorld(level);
@@ -292,7 +293,7 @@ export class Factory3D {
     this.cols = this.mode === 'menu' ? 5 : level.grid[0].length;
     this.worldNumber = this.mode === 'menu' ? 1 : (level.world || 1);
     this.palette = palettes[this.worldNumber] || palettes[1];
-    this.showcase = this.mode !== 'menu' && level.id === 1 && !level.curriculum;
+    this.showcase = this.mode !== 'menu' && isOpeningMission(level.curriculum, level.id);
     this.boardWidth = this.cols * TILE + .9;
     this.boardDepth = this.rows * TILE + .9;
     this.pickup = this.pressTime = this.errorTime = this.winTime = this.launchTime = this.turn = null;
@@ -307,8 +308,8 @@ export class Factory3D {
     }
     this.floor = null;
     if(this.showcase) {
-      this.boardWidth=3.5;this.boardDepth=2.5;
-      this.buildFirstMission();
+      this.buildOpeningMission();
+      this.fitShadows();
       const theme=this.theme;this.theme=null;this.setTheme(theme||'light');
       return;
     }
@@ -323,11 +324,15 @@ export class Factory3D {
     }
     if (this.mode === 'menu') this.buildLobby();
     else this.buildLevel(level);
+    this.fitShadows();
+    const theme = this.theme; this.theme = null; this.setTheme(theme || 'light');
+  }
+
+  fitShadows() {
     const extent = Math.max(this.boardWidth, this.boardDepth) / 2 + 2;
     this.keyLight.shadow.camera.left = this.keyLight.shadow.camera.bottom = -extent;
     this.keyLight.shadow.camera.right = this.keyLight.shadow.camera.top = extent;
     this.keyLight.shadow.camera.updateProjectionMatrix();
-    const theme = this.theme; this.theme = null; this.setTheme(theme || 'light');
   }
 
   tree(parent, x, z) {
@@ -336,12 +341,16 @@ export class Factory3D {
     this.shape('cylinder', [0, .36, .75], this.material(0x65ad49), parent, [x, 1.35, z]);
   }
 
-  buildFirstMission() {
+  buildOpeningMission() {
     this.robot.scale.setScalar(1.42);
-    // Only the two playable squares are shown: the hidden boundary remains in
-    // the puzzle grid, so movement and collision rules are unchanged.
-    for(const col of [1,2]) {
-      const p=this.position(2,col),g=new THREE.Group();g.position.set(p.x,0,p.z);this.world.add(g);
+    // Render each playable square while keeping the hidden collision boundary.
+    const tiles = this.level.grid.flatMap((line, row) => [...line].flatMap((tile, col) => tile === '#' ? [] : [{ row, col, tile, position: this.position(row, col) }]));
+    const xs = tiles.map(tile => tile.position.x), zs = tiles.map(tile => tile.position.z);
+    this.showcaseCenter = new THREE.Vector3((Math.min(...xs) + Math.max(...xs)) / 2, .12, (Math.min(...zs) + Math.max(...zs)) / 2);
+    this.boardWidth = Math.max(...xs) - Math.min(...xs) + 2.22;
+    this.boardDepth = Math.max(...zs) - Math.min(...zs) + 2.5;
+    for(const { row, col, position: p } of tiles) {
+      const g=new THREE.Group();g.name=`opening-tile-${row}-${col}`;g.position.set(p.x,0,p.z);this.world.add(g);
       this.box(1.25,.70,1.25,0x875033,g,[0,-.47,0]);
       this.box(1.27,.15,1.27,0x527c20,g,[0,-.055,0]);
       this.box(1.26,.09,1.26,0x8abd31,g,[0,.045,0]);
@@ -367,7 +376,7 @@ export class Factory3D {
         this.shape('sphere',[.025],this.material(0xffcd44,0,.7),g,[x,.13,z]);
       }
     }
-    const p=this.position(2,2);
+    const p=tiles.find(tile => tile.tile === 'E').position;
     this.shape('cylinder',[.38,.42,.12],this.material(0x647688,.45,.45),this.world,[p.x,.15,p.z]);
     this.shape('cylinder',[.33,.36,.055],this.material(0xcbdbe6,.4,.3),this.world,[p.x,.24,p.z]);
     const ring=this.ring(this.world,p.x,p.z,0x45efff,.29);ring.position.y=.28;this.goalRings.push(ring);
@@ -590,19 +599,41 @@ export class Factory3D {
       : Math.max(extent * .48 + .45, (extent * .63 + .5) / aspect);
     this.camera.left = -half * aspect; this.camera.right = half * aspect;
     this.camera.top = half; this.camera.bottom = -half;
+    if (this.showcase && !this.cameraZoomManual && ['default', 'top'].includes(this.cameraMode)) this.camera.zoom = this.openingCameraZoom(aspect);
     this.camera.updateProjectionMatrix();
+  }
+
+  openingCameraZoom(aspect) {
+    if (this.level.id === 4) {
+      // Five equal tiles fill a wide screen while preserving the full row on a
+      // portrait screen; a top view needs room for the turf's overhang too.
+      const narrowZoom = this.cameraMode === 'top' ? 1.45 : 1.6;
+      return Math.min(2.0, narrowZoom * Math.max(1, aspect / 1.3));
+    }
+    return this.level.id === 1 ? 1.3 : this.level.id === 3 ? 1.32 : 1.6;
   }
 
   resetCamera(top = false) {
     if (!this.controls) return;
     this.cameraMode = top ? 'top' : 'default';
-    this.camera.zoom = this.showcase ? 1.3 : 1;
+    this.cameraZoomManual = false;
+    // Compensate the orthographic bounds so longer opening routes retain clear
+    // turf detail and a readable robot while keeping every tile in view.
+    this.camera.zoom = this.showcase ? this.openingCameraZoom(this.host ? Math.max(1, this.host.clientWidth) / Math.max(1, this.host.clientHeight) : 1) : 1;
     this.camera.updateProjectionMatrix();
     this.controls.target.set(0, this.mode === 'menu' ? .5 : .15, 0);
-    if(this.showcase)this.controls.target.set(-.64,.12,0);
+    if(this.showcase) {
+      this.controls.target.copy(this.showcaseCenter);
+      if (this.level.id !== 1) this.controls.target.y += .12;
+    }
     const scale = Math.max(1, Math.max(this.boardWidth || 7.3, this.boardDepth || 7.3) / 7.3);
     this.camera.position.set(top ? 0 : 3.7 * scale, top ? 15 * scale : 10.8 * scale, top ? .1 : 13.5 * scale);
-    if(this.showcase&&!top)this.camera.position.set(2.8,3.0,5.7);
+    if(this.showcase) {
+      const center=this.showcaseCenter;
+      const lateral = this.level.heading === 'down' ? 0 : this.level.heading === 'left' ? -3.44 : 3.44;
+      const elevation = this.level.id === 3 ? 4.2 : 3.0;
+      this.camera.position.set(center.x + (top ? 0 : lateral), (top ? 15 : elevation) + (this.level.id !== 1 ? .12 : 0), center.z + (top ? .1 : 5.7));
+    }
     if (this.mode === 'menu') { this.controls.target.set(0,1.4,0); this.camera.position.set(.4,2.1,10); this.camera.zoom=1; this.camera.updateProjectionMatrix(); }
     this.controls.update();
   }
@@ -614,6 +645,7 @@ export class Factory3D {
   }
 
   zoom(amount) {
+    this.cameraZoomManual = true;
     this.camera.zoom = THREE.MathUtils.clamp(this.camera.zoom + amount, .65, 3);
     this.camera.updateProjectionMatrix();
   }

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { SoundEffects, CUES } from '../dist/sounds.js';
 
 function fakeContext() {
-  const nodes=[];
+  const nodes=[],gains=[];
   const parameter=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){},linearRampToValueAtTime(){}});
-  return {state:'running',currentTime:0,destination:{},nodes,
-    createGain(){return {gain:parameter(),connect(){},disconnect(){}};},
+  return {state:'running',currentTime:0,destination:{},nodes,gains,
+    createGain(){const levels=[];const gain={gain:{...parameter(),linearRampToValueAtTime(value){levels.push(value);}},levels,connect(){},disconnect(){}};gains.push(gain);return gain;},
     createOscillator(){const node={frequency:parameter(),connect(){},disconnect(){},start(at){this.startAt=at;},stop(at){this.stopAt=at;this.stopped=true;}};nodes.push(node);return node;}
   };
 }
@@ -23,6 +23,17 @@ test('Mute immediately stops active and scheduled notes and blocks new ones',asy
   sound.setEnabled(false);assert.equal(sound.voices.size,0);
   const before=context.nodes.length;await sound.play('move');assert.equal(context.nodes.length,before);
   sound.setEnabled(true);await sound.play('on');assert.equal(context.nodes.length,before+2);
+});
+test('The victory fanfare is brief, ends in a chord and keeps layered voices soft',async()=>{
+  const context=fakeContext();const sound=new SoundEffects({createContext:()=>context});
+  assert.equal(await sound.play('complete'),true);
+  assert.ok(Math.max(...context.nodes.map(node=>node.stopAt))<1.2);
+  const finalStart=Math.max(...context.nodes.map(node=>node.startAt));
+  assert.equal(context.nodes.filter(node=>node.startAt===finalStart).length,3);
+  assert.ok(context.gains.every(gain=>Math.max(...gain.levels)<=.12));
+  const count=context.nodes.length;sound.setEnabled(false);
+  assert.equal(await sound.play('complete'),false);
+  assert.equal(context.nodes.length,count);
 });
 test('Muting while audio resumes cannot emit delayed sound',async()=>{
   const context=fakeContext();context.state='suspended';let resume;

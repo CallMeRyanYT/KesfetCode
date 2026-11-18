@@ -81,3 +81,86 @@ html[data-scenery-motion=on] .river-current path{animation:river-flow 3s linear 
 
 .map-building-signs{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .map-building-signs,.planet-art .building-signs{opacity:1}
+
+/* The information belongs beside the first missions, at the foot of the road. */
+.map-heading>div{flex:1;padding-right:90px}
+.adventure-map .map-sidebar{align-self:end;position:static;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
+.map-sidebar>.space-score{order:2;align-self:flex-end;font-size:20px;padding:10px 16px}
+.map-sidebar>.space-button{order:3;margin-top:0}
+.map-sidebar .mission-brief{padding:18px}
+.map-sidebar .mission-brief h2{font-size:25px}
+.map-sidebar .mission-brief p{font-size:13px;line-height:1.55;margin:9px 0}
+.map-sidebar .mission-brief ul{font-size:12px;line-height:1.8;padding-top:10px;margin-bottom:0}
+.map-bottom>.star-progress{order:2;margin-left:auto}
+.map-bottom>p{order:1}
+.all-missions .node-stars{display:flex;gap:1px;margin-top:3px;line-height:1;filter:drop-shadow(0 2px 1px #143746)}
+.all-missions .node-stars i{font-size:23px;color:#d7e9ee;-webkit-text-stroke:1px #37576b}
+.all-missions .node-stars i.lit{color:#ffda32;-webkit-text-stroke:1px #976521;text-shadow:0 0 6px #fff2a2}
+.all-missions .mission-node:hover .node-title,.all-missions .mission-node:focus-visible .node-title{margin-top:5px}
+
+/* One consistent lab logo, with the game name tucked under its right edge. */
+.lab-lockup{display:inline-flex;flex-direction:column;align-items:center;width:190px;max-width:100%;line-height:1;filter:drop-shadow(0 2px 2px #07192b80)}
+.lab-lockup>img{display:block;width:78%;height:auto;object-fit:contain;filter:drop-shadow(0 1px 0 #ffffff50)}
+.lab-lockup .lab-product{align-self:flex-end;white-space:nowrap;margin-top:8px;color:#e9faff;font:700 22px/1 Outfit,sans-serif;letter-spacing:-.6px;text-shadow:0 2px 2px #163652}
+.lab-lockup .lab-product b{color:#ffb52e}
+.home-content .lab-lockup{width:clamp(180px,28vh,240px)}
+.home-content{gap:15px;margin-top:0}
+.home-quote{margin-top:12px}
+.map-sidebar .lab-lockup{width:112px}
+.map-sidebar .lab-lockup .lab-product{font-size:15px;margin-top:5px}
+.adventure-brand:has(.lab-lockup){filter:none}
+
+/* Daylight controls use the same pale glass as the mission panels. */
+html[data-view=menu][data-theme=light]{background:#dceaf1;color-scheme:light}
+html[data-theme=light] .adventure-tools>button,
+html[data-theme=light] .adventure-languages,
+html[data-theme=light] .space-back,
+html[data-theme=light] .story-link{background:#edf8f3ed;color:#203f53;border-color:#c2d9e1;box-shadow:0 3px 12px #001b3230}
+html[data-theme=light] .adventure-tools>button:hover,
+html[data-theme=light] .space-back:hover,
+html[data-theme=light] .story-link:hover{background:#fff}
+html[data-theme=light] .adventure-languages button{color:#486274}
+html[data-theme=light] .adventure-languages button[aria-pressed=true]{background:#24657e;color:#fff}
+html[data-theme=light] .planet-copy{background:linear-gradient(145deg,#f6fff5ef,#d8e9f1ed);color:#234557;box-shadow:inset 0 1px #fff,0 8px 20px #06192c30}
+html[data-theme=light] .planet-copy>.space-eyebrow{color:#426573}
+html[data-theme=light] .planet-copy p,
+html[data-theme=light] .planet-copy small{color:#405e6d}
+html[data-theme=light] .space-age{background:#ffffff75;border-color:#8dabb5}
+html[data-theme=light] .planet-number{color:white}
+html[data-theme=light] .space-score,
+html[data-theme=light] .star-progress{background:#f4faf0ed;color:#715219;border-color:#c6d6d1;box-shadow:0 3px 12px #07274120}
+html[data-theme=light] .star-progress progress{accent-color:#198b50}
+html[data-theme=light] .star-milestone{opacity:1;color:#677771}
+html[data-theme=light] .star-milestone.achieved{color:#87620b;font-weight:800}
+html[data-theme=light] .world-legend>div{background:#eef8f7e8;color:#284755;border-color:#aecbd1}
+html[data-theme=light] .world-legend small{color:#506f7a}
+html[data-theme=light] .world-legend b{color:#08718b}
+html[data-theme=light] .mission-brief{border-color:#b6d5d8;box-shadow:0 4px 15px #173e5120}
+
+/* Explorer's fifteen missions occupy the lower 58% of the painted map. */
+.all-missions.chapter-map-0{aspect-ratio:100 / 87;min-height:0!important}
+.chapter-map-0 .map-scenery,.chapter-map-0 .map-building-signs,.chapter-map-0 .water-texture,.chapter-map-0 .living-scenery{top:-72.4138%;bottom:auto;height:172.4138%}
+.chapter-map-0 .ridge-stairs{display:none}
+
+/* Space-blue panels tie the adventure map to its backdrop in either theme. */
+.adventure-map .mission-brief,html[data-theme=light] .adventure-map .mission-brief{background:linear-gradient(155deg,#123e68f2,#071c3af5);border:1px solid #70b4e58c;color:#effaff;box-shadow:inset 0 1px #ffffff24,0 8px 22px #00132680}
+.adventure-map .mission-brief :is(p,li,small),html[data-theme=light] .adventure-map .mission-brief :is(p,li,small){color:#d2e9fa}
+html[data-theme=light] .adventure-map .mission-brief .space-eyebrow{color:#7ee5ff}
+.adventure-map .world-legend>div,html[data-theme=light] .adventure-map .world-legend>div{background:linear-gradient(155deg,#174875ed,#071d3cf2);border-color:#6ca8d99c;color:#effaff;box-shadow:inset 0 1px #ffffff20,0 5px 14px #00142875}
+.adventure-map .world-legend small,html[data-theme=light] .adventure-map .world-legend small{color:#bcd9ed}
+.adventure-map .world-legend b,html[data-theme=light] .adventure-map .world-legend b{color:#6de7ff}
+.adventure-map .space-score,.adventure-map .star-progress,html[data-theme=light] .adventure-map :is(.space-score,.star-progress){background:linear-gradient(145deg,#123c64f5,#071b39f5);border-color:#78afe0a3;color:#ffe078;box-shadow:inset 0 1px #ffffff22,0 5px 16px #00142880}
+html[data-theme=light] .adventure-shell button:focus-visible{outline-color:#ffd448;box-shadow:0 0 0 3px #23495d}
+
+@media(max-width:600px){
+  .map-heading>div{padding-right:0}
+  .adventure-map .map-sidebar{order:2;align-self:stretch;display:grid;grid-template-columns:1fr auto;gap:10px;padding-bottom:0}
+  .map-sidebar>.space-score{grid-column:2;grid-row:1;font-size:16px;margin:0}
+  .map-sidebar>.mission-brief{grid-column:1/-1;grid-row:2}
+  .map-sidebar>.space-button{grid-column:1;grid-row:1;justify-self:start;margin:0}
+  .map-bottom>.star-progress{order:0;margin:0;gap:8px;padding:12px 10px}
+  .map-bottom>p{order:1;margin:0}
+  .all-missions .node-stars i{font-size:19px}
+  .all-missions .node-stars{gap:0}
+  .home-content{padding-bottom:20px}
+}

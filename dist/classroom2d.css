@@ -1,0 +1,118 @@
+/* Screen coordinates stay literal: columns go right and rows go down. */
+.classroom-board{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:22px 14px 24px;pointer-events:none;--classroom-tile:100px}
+.classroom-plane{position:relative;flex:none;isolation:isolate;filter:drop-shadow(0 6px 6px #58411d35)}
+.classroom-tile{position:absolute;width:var(--classroom-tile);height:var(--classroom-tile);padding:4px;border:3px solid #43852a;border-radius:14%;background:linear-gradient(135deg,#C5ED70,#95CE4A 75%);box-shadow:inset 0 0 0 2px #D8F897,inset 0 -3px 0 #7ABF36;overflow:hidden}
+.classroom-turf{position:absolute;inset:8%;border-radius:12%;background:radial-gradient(ellipse at 17% 27%,#F0FFC0 0 1.5%,transparent 2.8%),radial-gradient(ellipse at 70% 23%,#35A65E50 0 2%,transparent 3.4%),radial-gradient(ellipse at 43% 77%,#F6FFD0 0 1.8%,transparent 3%),radial-gradient(ellipse at 82% 65%,#319B5660 0 2%,transparent 3.6%);background-size:36px 39px}
+.classroom-start{border-color:#74952A;box-shadow:inset 0 0 0 3px #FFF6A4,inset 0 -3px 0 #7ABF36}
+.classroom-goal{border-color:#219FA1;box-shadow:inset 0 0 0 3px #B4FBF4,inset 0 -3px 0 #70CFA2;background:linear-gradient(135deg,#D2F78C,#92D870)}
+.classroom-flower{position:absolute;width:15%;height:15%;z-index:1;opacity:.95}.classroom-flower svg{width:100%;height:100%;display:block}.flower-one{left:12%;top:67%}.flower-two{right:12%;top:15%;width:12%;height:12%}
+.classroom-marker{position:absolute;left:17%;top:9%;width:66%;height:80%;z-index:2;filter:drop-shadow(0 3px 2px #397A4033)}.classroom-marker svg{display:block;width:100%;height:100%}.classroom-marker[hidden]{display:none!important}
+.classroom-robot{position:absolute;width:calc(var(--classroom-tile)*.87);height:calc(var(--classroom-tile)*.87);transform:translate(-50%,-50%);z-index:5;will-change:left,top;filter:drop-shadow(0 3px 2px #3C623455)}
+.classroom-robot-body{display:block;width:100%;height:100%;transform-origin:50% 75%}.classroom-robot-art{display:block;width:100%;height:100%}
+.classroom-win-spark{position:absolute;color:#FFF3A1;text-shadow:0 1px 0 #C1860C,0 0 6px #FFCE34;font-size:calc(var(--classroom-tile)*.28);display:none}.spark-one{left:-7%;top:20%}.spark-two{right:-7%;top:7%}
+.classroom-robot.is-won .classroom-win-spark{display:block}.classroom-robot.is-won .classroom-robot-body{animation:classroom-cheer .6s ease-out 2!important}.classroom-robot.is-moving .classroom-robot-body{animation:classroom-drive .34s ease-in-out 2!important}
+.classroom-robot.has-error .classroom-robot-body{filter:drop-shadow(0 0 3px #F77944)}
+.classroom-board[data-motion=off] .classroom-robot-body{animation:none!important}
+.classroom-robot.is-picking .classroom-robot-body{animation:classroom-cheer .42s ease-in-out 3!important}
+.classroom-marker.is-collecting{animation:classroom-collect 1.25s ease-in forwards!important}
+.classroom-marker.is-launching{animation:classroom-launch 4.4s ease-in forwards!important}
+.classroom-tile:has(.marker-R.is-launching){overflow:visible;z-index:8}
+.classroom-marker.is-ready{filter:drop-shadow(0 0 4px #FFFBD0)}
+.classroom-marker.is-pressed{filter:hue-rotate(100deg) saturate(.8)}
+.classroom-board[data-motion=off] .classroom-marker{animation:none!important}
+@keyframes classroom-drive{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes classroom-cheer{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes classroom-collect{0%,40%{transform:scale(1);opacity:1}70%{transform:translateY(-12%) scale(1.1);opacity:1}100%{transform:translateY(-30%) scale(.2);opacity:0}}
+@keyframes classroom-launch{0%,60%{transform:translateY(0);opacity:1}70%{transform:translateY(-8%);opacity:1}90%,100%{transform:translateY(-180%);opacity:0}}
+html[data-theme=dark] .classroom-tile{border-color:#47752A;background:linear-gradient(135deg,#B9DC69,#7EB943)}
+html[data-theme=dark] .classroom-goal{border-color:#20999C;background:linear-gradient(135deg,#B8E988,#7BBC64)}
+
+/* Each full board has 64 equal, screen-facing cells. Lush scenery is blocked;
+   bright path tiles always remain unobstructed and carry gameplay objects. */
+.classroom-full-grid{--classroom-path:#BFF06D;--classroom-path-light:#E5FFAB;--classroom-path-border:#80BC44;--classroom-terrain:#73CF73;--classroom-terrain-light:#B6ED8C;--classroom-terrain-border:#66B765}
+.classroom-full-grid .classroom-plane{outline:3px solid #FFF7D3;border-radius:10px;box-shadow:0 0 0 5px #5FA95B45;overflow:hidden;filter:drop-shadow(0 7px 8px #306B352D)}
+.classroom-full-grid .classroom-tile{border:1px solid var(--classroom-path-border);border-radius:7%;padding:1px;box-shadow:inset 0 0 0 1px #FBFFCEB0;background:linear-gradient(145deg,var(--classroom-path-light),var(--classroom-path));overflow:hidden}
+.classroom-full-grid .classroom-terrain{border-color:var(--classroom-terrain-border);border-radius:4%;background:linear-gradient(135deg,var(--classroom-terrain-light),var(--classroom-terrain));box-shadow:inset 0 0 0 1px #D9FFB340}
+.classroom-full-grid .classroom-terrain .classroom-turf{opacity:.55}
+.classroom-full-grid .classroom-start{border-color:#E0B133;box-shadow:inset 0 0 0 2px #FFF6AF;background:linear-gradient(145deg,#FFF2AB,#D7F174)}
+.classroom-full-grid .classroom-goal{border-color:#31BFA8;box-shadow:inset 0 0 0 2px #D9FFF5;background:linear-gradient(145deg,#D0FFCF,#8CE4A9)}
+.classroom-full-grid .classroom-route .classroom-flower{width:14%;height:14%;opacity:1;filter:drop-shadow(0 1px 0 #4C9C4530)}
+.classroom-full-grid .classroom-route .flower-two{width:10%;height:10%}
+.classroom-full-grid .flower-two{--classroom-petal:#FFA9D0}
+.classroom-full-grid .classroom-tile:nth-child(3n) .flower-two{--classroom-petal:#CDB9FF}
+.classroom-full-grid .classroom-marker{left:7%;top:5%;width:86%;height:90%;filter:drop-shadow(0 1px 1px #397A4033)}
+.classroom-full-grid .classroom-robot{width:calc(var(--classroom-tile)*.93);height:calc(var(--classroom-tile)*.93);filter:drop-shadow(0 2px 1px #2C443455)}
+.classroom-terrain-prop{position:absolute;left:13%;top:10%;width:74%;height:80%;opacity:1;filter:drop-shadow(0 2px 1px #27674026)}
+.classroom-terrain-prop svg{width:100%;height:100%;display:block}
+.classroom-full-grid[data-world="2"]{--classroom-path:#D5EF78;--classroom-path-light:#F4FFBC;--classroom-path-border:#9BC353;--classroom-terrain:#7DD78B;--classroom-terrain-light:#BEEFA0;--classroom-terrain-border:#6ABE7A}
+.classroom-full-grid[data-world="3"]{--classroom-path:#BEED6B;--classroom-path-light:#E4FFA8;--classroom-path-border:#7EBF42;--classroom-terrain:#65CB83;--classroom-terrain-light:#A8E68D;--classroom-terrain-border:#54AF70}
+.classroom-full-grid[data-world="4"]{--classroom-path:#BFEFD4;--classroom-path-light:#E5FFE1;--classroom-path-border:#83C9A8;--classroom-terrain:#70D5A0;--classroom-terrain-light:#B7EFA7;--classroom-terrain-border:#5FBA90}
+.classroom-full-grid[data-world="5"]{--classroom-path:#CDEBD9;--classroom-path-light:#F0FFE3;--classroom-path-border:#91C6AD;--classroom-terrain:#77CEA0;--classroom-terrain-light:#B7E9AE;--classroom-terrain-border:#69B58E}
+.classroom-full-grid[data-world="6"]{--classroom-path:#CAEFE6;--classroom-path-light:#F1FFEA;--classroom-path-border:#90C9B9;--classroom-terrain:#7ACFAE;--classroom-terrain-light:#BAECC0;--classroom-terrain-border:#69B99E}
+html[data-theme=dark] .classroom-full-grid .classroom-tile{background:linear-gradient(145deg,var(--classroom-path-light),var(--classroom-path));border-color:var(--classroom-path-border)}
+html[data-theme=dark] .classroom-full-grid .classroom-terrain{background:linear-gradient(135deg,var(--classroom-terrain-light),var(--classroom-terrain));border-color:var(--classroom-terrain-border)}
+html[data-theme=dark] .classroom-full-grid .classroom-start{border-color:#E0B133;background:linear-gradient(145deg,#FFF2AB,#D7F174)}
+html[data-theme=dark] .classroom-full-grid .classroom-goal{border-color:#31BFA8;background:linear-gradient(145deg,#D0FFCF,#8CE4A9)}
+
+/* Ambient life stays inside the artwork, separate from tile travel and pickups.
+   The game Motion control owns this setting, including on reduced-motion systems. */
+.classroom-tree-crown{transform-box:view-box;transform-origin:50px 84px}
+.classroom-bush-leaves{transform-box:view-box;transform-origin:50px 78px}
+.classroom-robot-eyes{transform-box:view-box;transform-origin:56px 42px}
+.classroom-crystal-gem{filter:drop-shadow(0 0 3px #34DFFF) drop-shadow(0 0 5px #7EF5FF99)}
+.classroom-crystal-aura{transform-box:view-box;transform-origin:50px 48px}
+.classroom-crystal-shadow{transform-box:view-box;transform-origin:50px 86px}
+.classroom-crystal-spark{transform-box:fill-box;transform-origin:center}
+.classroom-crystal .classroom-crystal-art{overflow:visible}
+.classroom-board[data-motion=on] .classroom-tree-crown{animation:classroom-breeze 5.6s ease-in-out infinite!important;animation-delay:var(--classroom-breeze-delay,0s)!important}
+.classroom-board[data-motion=on] .classroom-bush-leaves{animation:classroom-leaf-breathe 6.8s ease-in-out infinite!important;animation-delay:var(--classroom-breeze-delay,0s)!important}
+.classroom-board[data-motion=on] .classroom-robot-eyes{animation:classroom-look-around 11.6s ease-in-out infinite!important}
+.classroom-board[data-motion=on] .classroom-robot:is(.is-moving,.is-picking) .classroom-robot-eyes{animation:none!important}
+.classroom-board[data-motion=on] .classroom-crystal-gem{animation:classroom-crystal-float 2.8s ease-in-out infinite!important;animation-delay:var(--classroom-crystal-delay,0s)!important}
+.classroom-board[data-motion=on] .classroom-crystal-aura{animation:classroom-crystal-glow 2.8s ease-in-out infinite!important;animation-delay:var(--classroom-crystal-delay,0s)!important}
+.classroom-board[data-motion=on] .classroom-crystal-shadow{animation:classroom-crystal-shadow 2.8s ease-in-out infinite!important;animation-delay:var(--classroom-crystal-delay,0s)!important}
+.classroom-board[data-motion=on] .classroom-crystal-spark{animation:classroom-crystal-twinkle 3.4s ease-in-out infinite!important}
+.classroom-board[data-motion=on] .classroom-crystal-spark.spark-b{animation-delay:-1.7s!important}
+.classroom-board[data-motion=off] :is(.classroom-tree-crown,.classroom-bush-leaves,.classroom-robot-eyes,.classroom-crystal-gem,.classroom-crystal-aura,.classroom-crystal-shadow,.classroom-crystal-spark){animation:none!important}
+@keyframes classroom-breeze{0%,100%{transform:rotate(-1deg)}45%{transform:rotate(2deg)}75%{transform:rotate(-.5deg)}}
+@keyframes classroom-leaf-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025,.985)}}
+@keyframes classroom-look-around{0%,18%,37%,58%,78%,88%,91%,100%{transform:translate(0,0) scaleY(1)}23%,31%{transform:translate(-3.4px,-1px) scaleY(1)}63%,71%{transform:translate(3.4px,.5px) scaleY(1)}89.5%{transform:translate(0,0) scaleY(.08)}}
+@keyframes classroom-crystal-float{0%,100%{transform:translateY(2px)}50%{transform:translateY(-6px)}}
+@keyframes classroom-crystal-glow{0%,100%{transform:scale(.9);opacity:.6}50%{transform:scale(1.07);opacity:1}}
+@keyframes classroom-crystal-shadow{0%,100%{transform:scaleX(1);opacity:.27}50%{transform:scaleX(.7);opacity:.13}}
+@keyframes classroom-crystal-twinkle{0%,42%,100%{transform:scale(.55);opacity:.35}56%,66%{transform:scale(1.1);opacity:1}}
+
+/* First mission: a tactile, sunlit toy-board inspired by the reference. */
+.classroom-reference-board{--classroom-path:#9cda20;--classroom-path-light:#c8ef3c;--classroom-path-border:#4f920d;--classroom-terrain:#73ba12;--classroom-terrain-light:#ace426;--classroom-terrain-border:#53990c}
+.classroom-reference-board.classroom-full-grid .classroom-plane{outline:5px solid #a65b21;border-radius:10px;box-shadow:0 0 0 8px #e6a24c,0 7px 0 9px #714018,0 12px 18px 8px #542c1e55;filter:none}
+.classroom-reference-board.classroom-full-grid .classroom-tile{border:1px solid #54950c;border-radius:9%;background:linear-gradient(145deg,#c2ef36,#86cb10 64%,#69ac0a);box-shadow:inset 2px 2px 3px #e6ff7c99,inset -2px -4px 3px #528d1366,0 2px 2px #3e701c55}
+.classroom-reference-board.classroom-full-grid .classroom-terrain{background:linear-gradient(135deg,#afe52a,#7dc60b 68%,#62a709);box-shadow:inset 2px 2px 3px #d8ff6b88,inset -2px -4px 3px #4a810d66,0 2px 2px #3e701c55}
+.classroom-reference-board.classroom-full-grid .classroom-start{background:linear-gradient(145deg,#c2ee39,#8bcd12);box-shadow:inset 0 0 0 2px #ffdd58,inset 2px 2px 3px #e9ff9f}
+.classroom-reference-board.classroom-full-grid .classroom-goal{background:linear-gradient(145deg,#b7ef40,#81ce1c);box-shadow:inset 0 0 0 2px #86faff,inset 2px 2px 3px #e3ff9f}
+.classroom-reference-board .classroom-turf{inset:3%;opacity:.75!important;background:radial-gradient(circle at 23% 22%,#efff8c 0 1px,transparent 1.7px),radial-gradient(circle at 68% 74%,#efff8cbb 0 1px,transparent 2px),radial-gradient(ellipse at 38% 66%,#4d9e1266 0 1px,transparent 2px);background-size:19px 23px,27px 21px,22px 29px}
+.classroom-reference-board .prop-tree{left:8%;top:2%;width:84%;height:94%;filter:drop-shadow(0 3px 2px #2f5b2588);transform-origin:50% 90%}
+.classroom-reference-board .reference-tree{display:block;width:100%;height:100%;object-fit:contain}
+.classroom-reference-board[data-motion=on] .prop-tree{animation:reference-tree-wind 4.5s ease-in-out infinite!important;animation-delay:var(--classroom-breeze-delay,0s)!important}
+.classroom-reference-board[data-motion=off] .prop-tree{animation:none!important}
+@keyframes reference-tree-wind{0%,100%{transform:rotate(-2deg)}45%{transform:rotate(3deg)}75%{transform:rotate(-1deg)}}
+.classroom-reference-board .reference-prop,.classroom-reference-board .reference-robot,.classroom-reference-board .reference-crystal img{display:block;width:100%;height:100%;object-fit:contain}
+.classroom-reference-board .reference-crystal{display:block;width:100%;height:100%;filter:drop-shadow(0 0 7px #37f4ff);transform-origin:center}
+.classroom-reference-board .reference-crystal-image{display:block;position:relative;height:100%;aspect-ratio:2 / 3;margin:auto}
+.classroom-reference-board .reference-crystal-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.classroom-reference-board .reference-crystal-base{clip-path:inset(71.3% 0 0)}
+.classroom-reference-board .reference-crystal-floating{clip-path:inset(0 0 28.7%)}
+.classroom-reference-board[data-motion=on] .reference-crystal-floating{animation:reference-crystal-float 2.8s ease-in-out infinite!important;animation-delay:var(--classroom-crystal-delay,0s)!important}
+.classroom-reference-board[data-motion=on] .prop-bush{transform-origin:50% 90%;animation:reference-tree-wind 5.7s ease-in-out infinite!important;animation-delay:var(--classroom-breeze-delay,0s)!important}
+.classroom-reference-board[data-motion=off] :is(.prop-bush,.reference-crystal-floating){animation:none!important}
+@keyframes reference-crystal-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+/* Trees stay still; the robot's small idle gestures are independently timed. */
+.classroom-board[data-motion=on] .classroom-tree-crown,.classroom-reference-board[data-motion=on] .prop-tree{animation:none!important}
+.reference-robot-art{position:relative;display:block;height:100%;aspect-ratio:1312 / 1199;margin:auto}
+.reference-robot-art .reference-robot{width:100%;height:100%}
+.reference-face{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.reference-eyes{filter:drop-shadow(0 0 12px #ffad00);transition:transform .5s ease}
+.idle-look-left .reference-eyes{transform:translate(-25px,-5px)}
+.idle-look-right .reference-eyes{transform:translate(25px,-5px)}
+.classroom-reference-board[data-motion=on] .classroom-robot.idle-bob:not(.is-moving):not(.is-picking):not(.is-won) .reference-robot-art{animation:reference-idle-bob 1.6s ease-in-out!important;transform-origin:50% 88%}
+@keyframes reference-idle-bob{0%,100%{transform:rotate(0)}30%{transform:rotate(-4deg) translateY(-1%)}65%{transform:rotate(3deg) translateY(-2%)}}
+.classroom-reference-board[data-motion=off] .reference-eyes{transition:none}

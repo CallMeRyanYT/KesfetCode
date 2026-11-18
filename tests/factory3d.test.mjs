@@ -3,7 +3,25 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Factory3D } from '../dist/factory3d.js';
 import { MOVE_MS, PICKUP_MS } from '../dist/robot-motion.js';
-import { LEVELS } from '../dist/engine.js';
+import { LEVELS, initialState, step } from '../dist/engine.js';
+import { chapterMission } from '../dist/opening-missions.js';
+
+test('Changing chapters rebuilds the opening board; editing in the same chapter preserves it', () => {
+  const view = Object.create(Factory3D.prototype), builds = [];
+  Object.assign(view, {
+    mode: 'game', levelId: 1, level: { ...LEVELS[0], curriculum: 1 },
+    renderer: { domElement: {} }, resizeObserver: { disconnect() {}, observe() {} },
+    buildWorld(level) { builds.push(level); this.level = level; },
+    setState() {}, resetCamera() {}, setTheme() {}, paintStatus() {}, resize() {}
+  });
+  const host = { prepend() {} }, level = { ...LEVELS[0], curriculum: 0 };
+  const options = { mode: 'game', level, state: {}, theme: 'light', lang: 'tr' };
+  view.attach(host, options);
+  assert.equal(builds.length, 1);
+  assert.equal(builds[0].curriculum, 0);
+  view.attach(host, { ...options, level: { ...level } });
+  assert.equal(builds.length, 1);
+});
 
 function fixture() {
   const view = Object.create(Factory3D.prototype);
@@ -126,6 +144,130 @@ test('Every campaign board builds matching collectibles and doors with camera bo
     colors.add(view.palette.tile);
   }
   assert.equal(colors.size, 6);
+});
+
+test('Opening boards share detailed grass tiles, with a centered three-tile route and crystal on the left in mission two', () => {
+  const { view } = fixture();
+  Object.assign(view, {
+    world: new THREE.Group(), scene: new THREE.Scene(), geometries: new Map(), labels: [], theme: null,
+    keyLight: new THREE.DirectionalLight(), renderer: { setSize() {} }, camera: new THREE.OrthographicCamera(),
+    host: { dataset: {}, clientWidth: 480, clientHeight: 400 },
+    controls: { target: new THREE.Vector3(), update() {} }
+  });
+  view.buildWorld(chapterMission(LEVELS[0], 0));
+  const firstTiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
+  assert.equal(firstTiles.length, 2);
+  const firstTurfMaterial = firstTiles[0].children[2].material;
+  assert.equal(view.heroCrystal.position.x, view.position(3, 3).x);
+  assert.equal(view.heroCrystal.position.z, view.position(3, 3).z);
+  assert.equal(view.showcaseCenter.x, -.64);
+  assert.equal(view.showcaseCenter.z, 0);
+  const firstWidth = view.boardWidth;
+
+  const mission = chapterMission(LEVELS[1], 0);
+  view.buildWorld(mission); view.setState(initialState(mission), false); view.resetCamera(); view.resize();
+  const secondTiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
+  assert.equal(secondTiles.length, 3);
+  assert.deepEqual(secondTiles.map(tile => Number((tile.position.x - view.showcaseCenter.x).toFixed(8)) + 0), [-1.28, 0, 1.28]);
+  assert.ok(secondTiles.every(tile => Math.abs(tile.position.z - view.showcaseCenter.z) < 1e-8));
+  assert.ok(secondTiles.every(tile => tile.children[2].material === firstTurfMaterial));
+  assert.ok(secondTiles.every(tile => tile.children.length > 100));
+  assert.ok(secondTiles.every(tile => tile.children.every(mesh => mesh.castShadow && mesh.receiveShadow)));
+  assert.equal(Number((view.heroCrystal.position.x - view.showcaseCenter.x).toFixed(8)) + 0, -1.28);
+  assert.equal(Number((view.robot.position.x - view.showcaseCenter.x).toFixed(8)) + 0, 1.28);
+  assert.equal(view.robot.rotation.y, -Math.PI / 2);
+  assert.equal(view.controls.target.x, view.showcaseCenter.x);
+  assert.equal(view.controls.target.z, view.showcaseCenter.z);
+  assert.ok(view.boardWidth > firstWidth);
+  assert.ok(view.camera.right > view.boardWidth / 2);
+  assert.ok(view.keyLight.shadow.camera.right > view.boardWidth / 2);
+});
+
+test('The three-tile opening retains the first mission scale and fits desktop and portrait framing', () => {
+  const { view } = fixture();
+  Object.assign(view, {
+    world: new THREE.Group(), scene: new THREE.Scene(), geometries: new Map(), labels: [], theme: null,
+    keyLight: new THREE.DirectionalLight(), renderer: { setSize() {} }, camera: new THREE.OrthographicCamera(),
+    host: { dataset: {}, clientWidth: 1000, clientHeight: 288 },
+    controls: { target: new THREE.Vector3(), update() { view.camera.lookAt(this.target); view.camera.updateMatrixWorld(true); } }
+  });
+  // A normalized robot height is one unit before the shared 1.42 scale.
+  const robot = new THREE.Mesh(new THREE.BoxGeometry(.6, 1, .6));
+  robot.position.y = .5; view.robotBody.add(robot); view.robot.add(view.robotBody);
+  for (const [width, height] of [[1000, 288], [375, 360], [320, 360]]) {
+    view.host.clientWidth = width; view.host.clientHeight = height;
+    view.buildWorld(chapterMission(LEVELS[0], 0)); view.resetCamera(); view.resize();
+    const firstTileScale = view.camera.zoom / view.camera.top;
+    const mission = chapterMission(LEVELS[1], 0);
+    view.buildWorld(mission); view.setState(initialState(mission), false); view.resetCamera(); view.resize();
+    const secondTileScale = view.camera.zoom / view.camera.top;
+    assert.ok(Math.abs(secondTileScale / firstTileScale - 1) < .06);
+    view.world.updateMatrixWorld(true); view.robot.updateMatrixWorld(true);
+    for (const object of [view.world, view.robot]) {
+      const box = new THREE.Box3().setFromObject(object);
+      for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+        const projected = new THREE.Vector3(x, y, z).project(view.camera);
+        assert.ok(Math.abs(projected.x) < 1, `${width}px horizontal framing`);
+        assert.ok(Math.abs(projected.y) < 1, `${width}px vertical framing ${object === view.robot ? 'robot' : 'board'} ${projected.y}`);
+      }
+    }
+  }
+});
+
+test('The third and fourth openings reuse equal turf tiles with matching route geometry and fitted default/top cameras', () => {
+  const { view } = fixture();
+  Object.assign(view, {
+    world: new THREE.Group(), scene: new THREE.Scene(), geometries: new Map(), labels: [], theme: null,
+    keyLight: new THREE.DirectionalLight(), renderer: { setSize() {} }, camera: new THREE.OrthographicCamera(),
+    host: { dataset: {}, clientWidth: 1000, clientHeight: 288 },
+    controls: { target: new THREE.Vector3(), update() { view.camera.lookAt(this.target); view.camera.updateMatrixWorld(true); } }
+  });
+  const robot = new THREE.Mesh(new THREE.BoxGeometry(.6, 1, .6));
+  robot.position.y = .5; view.robotBody.add(robot); view.robot.add(view.robotBody);
+  view.buildWorld(chapterMission(LEVELS[0], 0));
+  const firstTile = view.world.children.find(child => child.name.startsWith('opening-tile-'));
+  const soilGeometry = firstTile.children[0].geometry, turfMaterial = firstTile.children[2].material;
+  for (const id of [3, 4]) {
+    const mission = chapterMission(LEVELS[id - 1], 0);
+    view.buildWorld(mission);
+    const tiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
+    assert.equal(tiles.length, id === 3 ? 3 : 5);
+    assert.ok(tiles.every(tile => tile.children[0].geometry === soilGeometry));
+    assert.ok(tiles.every(tile => tile.children[2].material === turfMaterial));
+    if (id === 3) {
+      assert.ok(tiles.every(tile => Math.abs(tile.position.x - view.showcaseCenter.x) < 1e-8));
+      assert.deepEqual(tiles.map(tile => Number((tile.position.z - view.showcaseCenter.z).toFixed(8)) + 0), [-1.28, 0, 1.28]);
+      assert.equal(Number((view.heroCrystal.position.z - view.showcaseCenter.z).toFixed(8)) + 0, 1.28);
+    } else {
+      assert.ok(tiles.every(tile => Math.abs(tile.position.z - view.showcaseCenter.z) < 1e-8));
+      assert.deepEqual(tiles.map(tile => Number((tile.position.x - view.showcaseCenter.x).toFixed(8)) + 0), [-2.56, -1.28, 0, 1.28, 2.56]);
+      assert.equal(Number((view.heroCrystal.position.x - view.showcaseCenter.x).toFixed(8)) + 0, 2.56);
+    }
+    for (const [width, height] of [[1000, 288], [375, 360], [320, 360], [468, 360], [540, 360]]) for (const top of [false, true]) {
+      view.host.clientWidth = width; view.host.clientHeight = height;
+      view.resetCamera(top); view.resize();
+      if (id === 3) {
+        assert.equal(view.camera.position.x, view.showcaseCenter.x);
+        if (!top) assert.ok(view.camera.position.y >= 4.2);
+        // Each row exposes enough grass depth to read as its own square.
+        const back = view.position(1, 2).project(view.camera), middle = view.position(2, 2).project(view.camera);
+        assert.ok(Math.abs(middle.y - back.y) * height / 2 > 40);
+      }
+      let state = initialState(mission);
+      for (let move = 0; move <= mission.target; move++) {
+        view.setState(state, false); view.world.updateMatrixWorld(true); view.robot.updateMatrixWorld(true);
+        for (const object of [view.world, view.robot]) {
+          const box = new THREE.Box3().setFromObject(object);
+          for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+            const projected = new THREE.Vector3(x, y, z).project(view.camera);
+            assert.ok(Math.abs(projected.x) < 1, `mission ${id} ${width}px horizontal ${top ? 'top' : 'default'} framing: ${projected.x}`);
+            assert.ok(Math.abs(projected.y) < 1, `mission ${id} ${width}px vertical ${top ? 'top' : 'default'} framing: ${projected.y}`);
+          }
+        }
+        state = step(mission, state, mission.solution[0].type);
+      }
+    }
+  }
 });
 
 test('Rendered driving traverses intermediate positions and articulates the body before arrival', () => {

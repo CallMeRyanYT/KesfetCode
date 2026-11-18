@@ -1,0 +1,188 @@
+/* Keep the board and both code shelves in view; menus retain normal scrolling. */
+html[data-view=game],html[data-view=game] body,html[data-view=game] #app{height:100%;min-height:0;overflow:hidden}
+.play-page{--guide-gutter:clamp(280px,29vw,430px);height:100dvh;min-height:0;padding:10px 2vw;display:grid;grid-template-rows:84px minmax(0,1fr);gap:10px;overflow:hidden}
+.play-page .play-header{width:100%;max-width:1500px;min-width:0;height:100%;margin:0 auto;grid-template-columns:140px minmax(0,1fr) auto;gap:12px}
+.play-header>*{min-width:0}
+.play-page .play-brand{width:130px;height:82px;padding:5px 8px;justify-content:center}
+.play-page .play-brand .lab-lockup{width:112px}
+.play-page .play-brand .lab-lockup>img{width:40px;height:50px;object-fit:contain}
+.play-page .play-brand .lab-product{font-size:15px;margin-top:1px;line-height:1.15}
+.play-page .play-brand em{display:none}
+.play-page .play-brand{cursor:default;display:flex;flex-direction:row;align-items:center;width:166px;height:72px;padding:9px 11px}
+.play-page .play-brand:hover{background:linear-gradient(145deg,#fffef9,#f4ead5);box-shadow:0 4px 0 #77562e55,0 7px 18px #173b4933}
+.play-page .play-brand .lab-lockup{display:grid;grid-template-columns:43px minmax(0,1fr);align-items:center;gap:8px;width:100%}
+.play-page .play-brand .lab-lockup>img{display:block;width:43px;height:54px;object-fit:contain}
+.play-page .play-brand .lab-product{display:block;font-size:17px;line-height:1.15;text-align:left;white-space:normal}
+.play-page .play-header{grid-template-columns:175px minmax(0,1fr) auto}
+.play-page .wood-sign{min-width:0;max-width:100%;padding:5px 16px}
+.play-page .wood-sign h1{font-size:clamp(16px,1.6vw,22px);line-height:1.15;overflow-wrap:anywhere}
+.play-page .wood-sign>span{font-size:10px;letter-spacing:1px}
+.play-page .wood-sign small{font-size:11px}
+.play-page .play-tools{min-width:0;max-width:360px;justify-content:flex-end;flex-wrap:wrap;gap:5px}
+.play-page .play-tools button{flex:0 0 auto;min-width:40px;max-width:82px;min-height:40px;padding:6px;line-height:1.15;overflow-wrap:anywhere}
+.play-page .play-tools button span{min-width:0;white-space:normal}
+.play-page .play-tools .icon{width:19px;height:19px}
+.play-page .play-layout,.play-page.play-chapter-0 .play-layout{width:100%;height:100%;min-width:0;min-height:0;grid-template-columns:var(--guide-gutter) minmax(0,1fr) clamp(180px,17vw,230px);grid-template-rows:minmax(0,1fr) auto;gap:10px;margin:0 auto}
+.play-page .play-stage{grid-column:2;grid-row:1;min-height:0;min-width:0}
+.play-page .play-stage>.scene-wrap,.play-page .scene-host{min-height:0;height:100%}
+.play-page .mission-panel{grid-column:3;grid-row:1;min-height:0;max-height:100%;padding:12px;overflow:auto;align-self:start;display:block}
+.play-page .mission-panel h2{font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.play-page .mission-panel>p{font-size:12px;line-height:1.45;margin:9px 0}
+.play-page .mission-panel .mission-star-row{padding:9px 0;margin:9px 0}
+.play-page .mission-coach,.play-page .collect-instruction{display:none}
+.play-page .coding-deck{grid-column:2/-1;grid-row:2;width:100%;min-width:0;min-height:0;gap:7px;justify-self:stretch}
+.play-page .program-dock,.play-page .play-palette{padding:6px 10px}
+.play-page .dock-heading{min-width:0;gap:8px;padding-bottom:4px;flex-wrap:nowrap}
+.play-page .dock-heading h2{font-size:12px;flex-shrink:0}
+.play-page .dock-heading>p{font-size:10px;min-width:0;line-height:1.25}
+.play-page .dock-heading>span{font-size:10px;flex-shrink:0}
+.play-page .program-scroll{height:82px;min-height:82px;max-height:82px;padding:11px 10px}
+.play-page .block-palette{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;gap:10px;min-width:0;padding:4px 3px 7px;scrollbar-width:thin}
+.play-page .palette-block{flex:0 0 62px;min-width:62px;width:62px;min-height:54px}
+.play-page .first-mission-tip{padding:7px 10px;gap:9px;min-width:0}
+.play-page .first-mission-tip p{font-size:12px;line-height:1.35;min-width:0}
+.play-page .first-mission-tip>button{flex-shrink:0}
+.play-page .scene-topline{left:8px;right:8px;top:4px;gap:5px;flex-wrap:wrap}
+.play-page .scene-tag{font-size:9px;padding:5px 7px;max-width:100%;overflow-wrap:anywhere}
+.companion-bubble{left:10%;width:78%}
+.companion-bubble:after{left:46%}
+.companion-tip{overflow-wrap:anywhere}
+@media(min-width:761px) and (max-width:1100px){
+  .play-page{--guide-gutter:280px}
+  .play-page .play-header{grid-template-columns:155px minmax(0,1fr) auto;gap:9px}
+  .play-page .play-brand{width:150px}
+  .play-page .play-brand .lab-lockup{width:100%}
+  .play-page .play-brand .lab-product{font-size:15px}
+  .play-page .play-tools{max-width:290px}
+  .play-page .play-tools button{font-size:9px;min-width:34px;padding:5px}
+  .play-page .wood-sign h1{font-size:17px}
+  .companion-bubble{left:7%;width:80%;padding:14px 13px 17px}
+  .companion-tip{font-size:14px}
+  .play-page .mission-panel{padding:9px}
+  .play-page .mission-panel h2{font-size:15px}
+  .play-page .mission-panel>p{font-size:11px}
+}
+@media(min-width:761px) and (max-width:900px){
+  .play-page{--guide-gutter:220px}
+  .mission-companion{--guide-width:235px;left:4px}
+  .companion-bubble{left:3%;width:88%;padding:12px}
+  .companion-tip{font-size:13px}
+  .play-page .play-tools{max-width:225px}
+}
+@media(min-width:761px) and (max-height:650px){
+  .play-page{grid-template-rows:64px minmax(0,1fr);gap:7px;padding-block:7px}
+  .play-page .play-brand{height:62px}
+  .play-page .play-brand .lab-lockup>img{width:28px;height:35px}
+  .play-page .play-brand .lab-product{font-size:13px}
+  .mission-companion{--guide-width:min(300px,50svh)}
+  .companion-bubble{left:4%;width:90%;padding:12px}
+  .companion-tip{font-size:13px}
+  .play-page .first-mission-tip p{font-size:11px}
+  .play-page .program-scroll{height:76px;min-height:76px;max-height:76px;padding-block:8px}
+}
+@media(max-width:760px){
+  .play-page{padding:7px 10px;grid-template-rows:auto minmax(0,1fr);gap:7px}
+  .play-page .play-header{grid-template-columns:104px minmax(0,1fr);grid-template-rows:56px 32px;gap:4px 8px}
+  .play-page .play-brand{width:100px;height:56px;padding:5px 7px}
+  .play-page .play-brand .lab-lockup{width:100%;grid-template-columns:27px minmax(0,1fr);gap:5px}
+  .play-page .play-brand .lab-lockup>img{width:27px;height:34px}
+  .play-page .play-brand .lab-product{font-size:11px}
+  .play-page .wood-sign{width:100%;padding:4px 13px}
+  .play-page .wood-sign h1{font-size:15px;margin:2px 0}
+  .play-page .wood-sign>span{font-size:8px;letter-spacing:.5px}
+  .play-page .wood-sign small{font-size:9px}
+  .play-page .play-tools{grid-column:1/-1;grid-row:2;max-width:none;justify-self:stretch;justify-content:flex-end;gap:4px;flex-wrap:nowrap}
+  .play-page .play-tools button{flex-direction:row;gap:4px;min-height:30px;min-width:30px;max-width:none;padding:4px 6px;font-size:9px}
+  .play-page .play-tools .icon{width:16px;height:16px}
+  .play-page .play-layout,.play-page.play-chapter-0 .play-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) 38px auto;gap:7px}
+  .mission-companion{position:static;width:auto;grid-column:1;grid-row:1;display:flex;flex-direction:row-reverse;gap:8px;align-items:center;pointer-events:auto;z-index:auto}
+  .companion-bubble{position:relative;left:auto;bottom:auto;flex:1;min-width:0;width:auto;border-radius:18px 18px 18px 6px;padding:8px 10px}
+  .companion-bubble:after{bottom:auto;top:55%;left:-8px;width:12px;height:12px;transform:rotate(135deg);background:#e8f7ff}
+  .companion-name{font-size:9px;margin-bottom:3px}
+  .companion-tip{font-size:12px;line-height:1.3}
+  .companion-robot{flex-shrink:0;width:55px;height:70px}
+  .play-page .play-stage{grid-column:1;grid-row:2}
+  .play-page .mission-panel{position:relative;grid-column:1;grid-row:3;align-self:stretch;max-height:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 9px;overflow:visible;border-radius:12px}
+  .play-page .mission-panel>.space-eyebrow,.play-page .mission-panel>h2,.play-page .mission-panel>p:not(.mission-feedback){display:none}
+  .play-page .mission-panel .mission-star-row{padding:0;margin:0;border:0;gap:6px}
+  .play-page .mission-panel .mission-star-row .icon{width:22px;height:22px}
+  .play-page .mission-panel>.secondary{padding:5px 8px;min-height:28px;font-size:10px}
+  .play-page .mission-panel>.mission-feedback{position:absolute;bottom:calc(100% + 5px);left:5px;right:5px;margin:0;font-size:11px;z-index:8}
+  .play-page .mission-panel>.play-hint{position:absolute;left:5px;right:5px;bottom:calc(100% + 5px);max-height:220px;overflow:auto;z-index:9;border-radius:12px;padding:12px;background:#103650;color:#effaff}
+  .play-page .coding-deck{grid-column:1;grid-row:4;gap:6px}
+  .play-page .program-dock,.play-page .play-palette{padding:5px 8px;border-radius:13px}
+  .play-page .dock-heading h2{font-size:11px}
+  .play-page .dock-heading>p{font-size:9px}
+  .play-page .dock-heading>span{font-size:9px}
+  .play-page .program-scroll{height:78px;min-height:78px;max-height:78px;padding:9px 8px}
+  .play-page .palette-block{flex-basis:56px;min-width:56px;width:56px;min-height:50px}
+  .play-page .block-palette{gap:9px;padding-block:3px 6px}
+  .play-page .first-mission-tip{padding:6px 8px;gap:7px}
+  .play-page .first-mission-tip p{font-size:11px;line-height:1.25}
+  .play-page .tip-number{flex-basis:24px;height:24px}
+  .play-page .first-mission-tip>button{flex-basis:24px;height:24px}
+}
+/* Give the 8×8 board the full height beside the mission and coding panels. */
+@media(min-width:761px){
+  .play-page .play-layout,.play-page.play-chapter-0 .play-layout{grid-template-columns:var(--guide-gutter) minmax(0,1fr) clamp(270px,25vw,360px);grid-template-rows:auto minmax(0,1fr)}
+  .play-page .play-stage{grid-column:2;grid-row:1/-1}
+  .play-page .mission-panel{grid-column:3;grid-row:1;max-height:180px}
+  .play-page .mission-panel>p:not(.mission-feedback){display:none}
+  .play-page .mission-panel h2{font-size:16px}
+  .play-page .mission-panel .mission-star-row{padding:7px 0;margin:7px 0}
+  .play-page .mission-panel>.secondary{padding:6px 10px;font-size:11px}
+  .play-page .coding-deck{grid-column:3;grid-row:2;align-self:end;gap:7px}
+  .play-page .play-palette .dock-heading>p{display:none}
+  .play-page .first-mission-tip p{font-size:12px}
+  .play-page .dock-heading>.icon-button{width:28px;height:26px}
+  .play-page .play-hint{font-size:12px}
+}
+@media(min-width:761px) and (max-height:650px){
+  .play-page .mission-panel{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 9px}
+  .play-page .mission-panel>.space-eyebrow,.play-page .mission-panel>h2{display:none}
+  .play-page .mission-panel .mission-star-row{padding:0;margin:0;border:0;gap:5px}
+  .play-page .mission-panel .mission-star-row .icon{width:24px;height:24px}
+  .play-page .mission-panel>.secondary{padding:5px 7px;font-size:10px}
+  .play-page .first-mission-tip p{font-size:11px}
+  .play-page .play-hint{position:absolute;right:0;top:100%;width:100%;max-height:180px;overflow:auto;background:#103650;border-radius:12px;padding:10px;z-index:10}
+  .play-page .mission-panel{position:relative}
+}
+
+/* Commands form a vertical list; Start stays beside the first command. */
+.play-page .program-dock{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.play-page .program-row{display:flex;flex:1;min-height:0;min-width:0}
+.play-page .program-scroll{display:grid;grid-template-columns:54px minmax(0,1fr);align-items:start;align-content:start;gap:9px 13px;flex:1;height:auto;min-height:0;max-height:none;padding:12px 13px 14px 10px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.play-page .program-scroll>.start-block{grid-column:1;grid-row:1;position:sticky;top:0;align-self:start;width:54px;min-width:54px;height:60px;margin:0;z-index:5}
+.play-page .program-scroll>.program-list{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:stretch;width:100%;min-width:0;gap:10px;margin:0;padding:0}
+.play-page .program-item{flex:0 0 auto;width:100%;min-width:0}
+.play-page .program-item>.code-block{display:flex;flex-direction:row;gap:7px;width:100%;height:52px;min-height:52px;padding:7px 21px 7px 22px;font-size:11px;line-height:1.2;text-align:left;justify-content:flex-start}
+.play-page .program-item>.code-block .icon{flex-shrink:0;width:24px;height:24px}
+.play-page .program-item>.code-block:after{right:auto;left:calc(50% - 8px);bottom:-7px;width:17px;height:9px;border-radius:0 0 5px 5px}
+.play-page .program-item .block-number{left:6px;top:20px;font-size:10px}
+.play-page .program-item>.block-delete{right:-5px;top:-6px}
+.play-page .program-scroll>.drop-target{grid-column:2;grid-row:2;width:100%;min-width:0;height:40px;min-height:40px;flex-basis:auto;margin:0}
+.play-page.opening-mission .first-block-slot{width:100%;min-width:0;flex-basis:60px;height:60px}
+.play-page .program-drop-indicator{left:77px;right:auto;top:auto;bottom:auto;width:calc(100% - 90px);height:3px}
+.play-page .program-drop-indicator:before{top:-3px;left:-4px}
+.play-page .program-drop-indicator:after{top:-3px;right:-4px;left:auto;bottom:auto}
+@media(min-width:761px){
+  .play-page .coding-deck{display:grid;grid-template-rows:minmax(0,1fr) auto;align-self:stretch;height:100%}
+  .play-page .coding-deck:has(.first-mission-tip){grid-template-rows:auto minmax(0,1fr) auto}
+}
+@media(max-width:760px){
+  .play-page .program-scroll{height:112px;min-height:112px;max-height:112px;flex-basis:112px}
+}
+
+/* Each movement card owns its own count, separate from other directions. */
+.play-page .program-item.has-direction-count>.code-block{height:64px;min-height:64px;padding:6px 82px 6px 19px;flex-direction:column;justify-content:center;align-items:center;gap:1px;text-align:center}
+.play-page .has-direction-count>.code-block .icon{width:21px;height:21px}
+.play-page .has-direction-count .command-text{display:flex;flex-direction:column;align-items:center;gap:2px;max-width:100%;font-size:11px;line-height:1.1;overflow-wrap:anywhere}
+.play-page .command-text small{font:700 9px/1.1 'DM Sans',sans-serif;color:#e9ffff;white-space:nowrap}
+.play-page .has-direction-count .block-number{top:26px}
+.play-page .direction-count{position:absolute;right:7px;top:20px;display:flex;align-items:center;gap:3px;color:#fff}
+.play-page .direction-count button{display:grid;place-items:center;width:23px;min-width:23px;height:26px;padding:0;border:1px solid #baf8ff;border-radius:6px;background:#006c87;color:#fff;font-size:19px;font-weight:800;line-height:1;cursor:pointer;touch-action:manipulation}
+.play-page .direction-count button:hover:not(:disabled){background:#004d66}
+.play-page .direction-count button:disabled{opacity:.35;cursor:default}
+.play-page .direction-count output{display:block;min-width:15px;text-align:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.play-page .has-direction-count>.block-delete{right:-5px;top:-6px}
+.play-page .program-item.executing>.direction-count{transform:translateY(-3px)}

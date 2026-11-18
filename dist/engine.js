@@ -5,6 +5,7 @@ export const DIRECTIONS = ['up', 'right', 'down', 'left'];
 export const ROTATION_ACTIONS = ['forward', 'turnRight', 'turnLeft'];
 export const MAX_BLOCKS = 80;
 export const MAX_REPEATS = 10;
+export const MAX_DIRECTION_COUNT = 10;
 export const PROGRESS_VERSION = 2;
 const vectors = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] };
 const itemTiles = ['P', 'a', 'b', 'c'];
@@ -15,6 +16,7 @@ export function resolveDirection(heading, action) {
   return DIRECTIONS[(DIRECTIONS.indexOf(heading || 'right') + DIRECTIONS.indexOf(action)) % 4];
 }
 export function relativeSolution(level) {
+  if (level.robotRelative === false) return level.solution.map(block => ({...block}));
   let heading = level.heading || 'right';
   return level.solution.map(block => {
     if (!DIRECTIONS.includes(block.type)) return {...block};
@@ -45,22 +47,112 @@ export function availableActions(level, state) {
     ...(level.id === 30 && state?.readyToLaunch && !state.won ? ['launch'] : [])];
 }
 
+export function isDirectionBlock(type) {
+  return DIRECTIONS.includes(type) || type === 'forward';
+}
+
+export function directionCountsAvailable(level) {
+  return !(level.curriculum === 0 && level.id < 6);
+}
+
+export function directionBlockCount(block) {
+  if (!block || typeof block !== 'object' || Array.isArray(block)) throw new Error('invalid-block');
+  const count = block.count === undefined ? 1 : block.count;
+  if (!Number.isInteger(count) || count < 1 || count > MAX_DIRECTION_COUNT || (!isDirectionBlock(block.type) && count !== 1)) throw new Error('invalid-block');
+  return count;
+}
+
+// Count the physical coding cards, not the commands produced by their counts.
+// A legacy loop's wrapper and each card inside it are counted once each.
+export function programBlockCount(program) {
+  if (!Array.isArray(program)) throw new Error('invalid-program');
+  return program.reduce((total, block) => total + 1 + (block?.type === 'repeat' ? programBlockCount(block.body) : 0), 0);
+}
+
+function matchingMetadataValue(left, right, seen = new WeakMap()) {
+  if (Object.is(left, right)) return true;
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object') return false;
+  const prototype = Object.getPrototypeOf(left);
+  if (prototype !== Object.getPrototypeOf(right) || prototype !== Object.prototype && !Array.isArray(left)) return false;
+  if (seen.has(left)) return seen.get(left) === right;
+  seen.set(left, right);
+  const keys = Reflect.ownKeys(left);
+  return keys.length === Reflect.ownKeys(right).length && keys.every(key => Object.hasOwn(right, key) && matchingMetadataValue(left[key], right[key], seen));
+}
+
+function matchingMovementMetadata(left, right) {
+  const keys = Object.keys(left).filter(key => key !== 'count');
+  if (keys.length !== Object.keys(right).filter(key => key !== 'count').length) return false;
+  return keys.every(key => {
+    if (!Object.hasOwn(right, key)) return false;
+    return matchingMetadataValue(left[key], right[key]);
+  });
+}
+
+export function missionTargetProgram(level) {
+  if (!Array.isArray(level?.solution) || !level.solution.length) return [];
+  // Bare authored levels use absolute movement. Older chapter instances use
+  // the converted relative arrows that the player actually has in the editor.
+  const canonical = level.robotRelative === true ? relativeSolution(level) : level.solution;
+  const counted = directionCountsAvailable(level), result = [];
+  for (const original of canonical) {
+    const block = structuredClone(original);
+    if (!isDirectionBlock(block.type)) { result.push(block); continue; }
+    let remaining = directionBlockCount(block);
+    if (!counted) {
+      while (remaining-- > 0) {
+        const single = structuredClone(block);
+        if (Object.hasOwn(single, 'count')) single.count = 1;
+        result.push(single);
+      }
+      continue;
+    }
+    while (remaining > 0) {
+      const previous = result.at(-1), previousCount = previous && isDirectionBlock(previous.type) ? directionBlockCount(previous) : MAX_DIRECTION_COUNT;
+      if (previous?.type === block.type && previousCount < MAX_DIRECTION_COUNT && matchingMovementMetadata(previous, block)) {
+        const added = Math.min(remaining, MAX_DIRECTION_COUNT - previousCount);
+        previous.count = previousCount + added; remaining -= added;
+      } else {
+        const added = Math.min(remaining, MAX_DIRECTION_COUNT), next = structuredClone(block);
+        if (added > 1 || Object.hasOwn(next, 'count')) next.count = added;
+        result.push(next); remaining -= added;
+      }
+    }
+  }
+  return result;
+}
+
+export function missionBlockTarget(level) {
+  const reference = missionTargetProgram(level);
+  if (reference.length) return programBlockCount(reference);
+  return Number.isSafeInteger(level?.target) && level.target >= 0 ? level.target : 1;
+}
+
 export function expandProgram(level, program, repeatCount = 1) {
   if (!Array.isArray(program) || program.length > MAX_BLOCKS) throw new Error('invalid-program');
   if (!Number.isInteger(repeatCount) || repeatCount < 1 || repeatCount > MAX_REPEATS) throw new Error('invalid-repeat');
   const allowed = [...availableActions(level), ...(level.id === 30 ? ['launch'] : [])];
   let count = 0;
-  const compile = (blocks, parent = null) => Array.from(blocks, (block, index) => {
-    if (++count > MAX_BLOCKS) throw new Error('invalid-program');
-    const key = parent === null ? String(index) : `${parent}.${index}`;
-    if (block?.type === 'repeat') {
-      if (parent !== null || !Array.isArray(block.body) || !block.body.length || !Number.isInteger(block.count) || block.count < 2 || block.count > MAX_REPEATS) throw new Error('invalid-repeat');
-      const body = compile(block.body,index);
-      return Array.from({length:block.count},(_,iteration)=>body.map(action=>({...action,iteration:iteration+1}))).flat();
+  const compile = (blocks, parent = null) => {
+    const result = [];
+    for (const [index, block] of blocks.entries()) {
+      if (++count > MAX_BLOCKS) throw new Error('invalid-program');
+      const key = parent === null ? String(index) : `${parent}.${index}`;
+      if (block?.type === 'repeat') {
+        if (parent !== null || !Array.isArray(block.body) || !block.body.length || !Number.isInteger(block.count) || block.count < 2 || block.count > MAX_REPEATS) throw new Error('invalid-repeat');
+        const body = compile(block.body,index);
+        if (result.length + body.length * block.count > MAX_BLOCKS * MAX_REPEATS) throw new Error('invalid-program');
+        for (let iteration = 1; iteration <= block.count; iteration++) result.push(...body.map(action => ({...action, iteration})));
+      } else {
+        if (!block || typeof block !== 'object' || Array.isArray(block) || !allowed.includes(block.type)) throw new Error('invalid-block');
+        const repetitions = directionBlockCount(block);
+        if (repetitions > 1 && !directionCountsAvailable(level)) throw new Error('invalid-block');
+        if (result.length + repetitions > MAX_BLOCKS * MAX_REPEATS) throw new Error('invalid-program');
+        for (let movement = 0; movement < repetitions; movement++) result.push({type:block.type,index,key});
+      }
     }
-    if (!block || typeof block !== 'object' || !allowed.includes(block.type)) throw new Error('invalid-block');
-    return { type: block.type, index, key };
-  }).flat();
+    return result;
+  };
   const sequence = compile(program);
   if(sequence.length * repeatCount > MAX_BLOCKS * MAX_REPEATS) throw new Error('invalid-program');
   return Array.from({ length: repeatCount }, (_, iteration) => sequence.map(action => ({...action, iteration: action.iteration ?? iteration + 1}))).flat();
@@ -148,11 +240,13 @@ export function simulate(level, program) {
   return state;
 }
 
-export function scoreRun(level, state, programLength) {
+export function scoreRun(level, state, physicalBlocks) {
   if (!state.won || state.error) return 0;
   const total = level.grid.join('').split('C').length - 1;
   if (state.crystals.length < total) return 1;
-  return Number.isInteger(programLength) && programLength <= level.target ? 3 : 2;
+  if (!Number.isSafeInteger(physicalBlocks) || physicalBlocks < 1) return 1;
+  const extra = physicalBlocks - missionBlockTarget(level);
+  return extra <= 0 ? 3 : extra <= 4 ? 2 : 1;
 }
 
 export function normalizeProgress(input) {

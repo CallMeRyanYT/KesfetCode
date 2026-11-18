@@ -21,7 +21,7 @@ test('Local repeat groups leave later commands outside the loop',()=>{
   assert.throws(()=>expandProgram(LEVELS[0],[{type:'repeat',count:3,body:[]}]));
   assert.throws(()=>expandProgram(LEVELS[0],[{type:'repeat',count:3,body:blocks}]));
 });
-import { LEVELS, WORLDS, CHAPTERS, MAX_BLOCKS, PROGRESS_VERSION, initialState, step, simulate, availableActions, expandProgram, scoreRun, normalizeProgress, isUnlocked, completeLevel } from '../dist/engine.js';
+import { LEVELS, WORLDS, CHAPTERS, MAX_BLOCKS, PROGRESS_VERSION, initialState, step, simulate, availableActions, expandProgram, scoreRun, missionTargetProgram, missionBlockTarget, programBlockCount, normalizeProgress, isUnlocked, completeLevel } from '../dist/engine.js';
 const program = (...types) => types.map(type => ({ type }));
 const forward = count => Array.from({ length: count }, () => ({ type: 'right' }));
 const move = (direction, count = 1) => Array.from({ length: count }, () => ({ type: direction }));
@@ -107,19 +107,21 @@ test('The story contains six bilingual worlds and thirty well-formed missions', 
 });
 
 for (const level of LEVELS) {
-  test(`Mission ${level.id}: authored solution completes every objective within its three-star budget`, () => {
+  test(`Mission ${level.id}: authored solution completes every objective and its counted reference earns three stars`, () => {
     const result = simulate(level, level.solution);
     assert.equal(result.won, true);
     assert.equal(result.error, null);
     assert.equal(result.crystals.length, countTile(level, 'C'));
     assert.ok(level.solution.length <= MAX_BLOCKS);
-    assert.equal(scoreRun(level, result, level.solution.length), 3);
+    const reference = missionTargetProgram(level);
+    assert.deepEqual(simulate(level, reference), result);
+    assert.equal(scoreRun(level, result, programBlockCount(reference)), 3);
     assert.equal(level.grid[result.row][result.col], level.id === 30 ? 'R' : 'E');
   });
-  test(`Mission ${level.id}: independent search proves its complete route and command budget`, () => {
+  test(`Mission ${level.id}: independent search proves its complete route and authored action budget`, () => {
     const shortest = shortestRoute(level);
     assert.ok(Number.isFinite(shortest), 'No independent solution exists');
-    assert.equal(shortest, level.target, 'The three-star target must match the independently optimal route');
+    assert.equal(shortest, level.target, 'The authored action target must match the independently optimal route');
   });
 }
 
@@ -263,8 +265,8 @@ test('Stars distinguish reaching the exit, collecting all crystals, and efficien
   assert.equal(direct.crystals.length, 0);
   assert.equal(scoreRun(level, direct, 4), 1);
   const complete = simulate(level, level.solution);
-  assert.equal(scoreRun(level, complete, level.target), 3);
-  assert.equal(scoreRun(level, complete, level.target + 1), 2);
+  assert.equal(scoreRun(level, complete, missionBlockTarget(level)), 3);
+  assert.equal(scoreRun(level, complete, missionBlockTarget(level) + 1), 2);
   assert.equal(scoreRun(level, initialState(level), 0), 0);
   assert.equal(shortestRoute(LEVELS[17]), 4);
   const long = [...move('right', 2), ...move('left', 2), ...move('right', 2)];

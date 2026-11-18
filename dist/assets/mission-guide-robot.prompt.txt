@@ -1,0 +1,10 @@
+Mode: built-in image_gen (reference-guided generation with transparent background)
+Reference: codex-clipboard-4e197312-76e5-4205-8e36-c34b81c71545.png
+
+Use case: stylized-concept
+Asset type: transparent character cutout for a children's coding game mission guide.
+Input image: reference only for the friendly orange and black tracked robot's design, polish, and raised teaching gesture.
+Primary request: Draw a single full-body smiling orange-and-black teaching robot resembling the friendly robot in the reference. Rounded orange rectangular head, glossy black face display with two warm yellow happy eyes and a curved smile, round side ear joints, compact orange torso, articulated arms, two black rubber tank tracks with orange wheels. Its left arm at its side, its right arm bent upward with one friendly raised index finger, gesturing toward an accompanying speech bubble that will be rendered separately above/right. Cute, approachable toy proportions and high-quality softly lit illustration with the warm polished style of the reference.
+Composition: entire robot centered and fully visible, head upright facing viewer, gentle three-quarter view, generous transparent border, portrait cutout. Make silhouette and gesture clear at small sidebar size.
+Scene/backdrop: fully transparent background with genuine alpha; no floor or shadow rectangle.
+Constraints: robot only. No speech bubble, no text, no letters, no logo, no watermark, no background scenery, no extra objects. Keep robot friendly and visually consistent with the reference.
