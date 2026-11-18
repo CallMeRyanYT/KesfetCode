@@ -15,6 +15,7 @@ import { playScene } from './story-player.js';
 import { REACTIONS, SCENES, LINES, voicePath } from './story-script.js';
 import { CompanionVoice, tipVoicePath } from './companion-voice.js';
 import { startBlinking } from './talking-robot.js';
+import { Coach } from './coach.js';
 let disposeIllustrations = () => {};
 let disposeGuide = () => {}, guideDismissed = false;
 let disposeRoad = () => {};
@@ -71,6 +72,27 @@ const localized = pair => pair?.[lang === 'en' ? 0 : 1] ?? '';
 // story beats are spoken by KAŞİF when the next mission opens.
 let pendingStory = null, pendingLine = null, storyPlaying = false;
 const companion = new CompanionVoice({ enabled: () => sound });
+// Shows what to tap next on the menus, the map and the success dialog.
+const coach = new Coach();
+function updateCoach() {
+  const dialog = document.querySelector('dialog[open]');
+  if (storyPlaying || document.querySelector('.story-stage')) { coach.hide(); return; }
+  if (dialog) {
+    const next = dialog.querySelector('.success-next');
+    if (next) coach.show(next, next.dataset.dialog === 'menu' ? text('Back to the map', 'Haritaya dön') : text('Tap to continue', 'Devam etmek için dokun'), 'continue', { placement: 'below' });
+    else coach.hide();
+    return;
+  }
+  if (view !== 'menu') { coach.hide(); return; }
+  const fresh = completedCount(0) === 0;
+  if (menuPage === 'home' && fresh) return coach.show(app.querySelector('.start-adventure'), text('Tap PLAY!', 'OYUNA BAŞLA’ya dokun!'), 'home');
+  if (menuPage === 'chapters' && fresh) return coach.show(app.querySelector('[data-action="choose-path"][data-path="0"]'), text('Start here!', 'Buradan başla!'), 'chapters');
+  if (menuPage === 'map' && selectedChapter === 0 && completedCount(0) < chapterMissionCount(0)) {
+    const next = resumeLevel(0);
+    return coach.show(app.querySelector(`.mission-node[data-level="${next}"]`), text(`Tap mission ${next + 1}`, `${next + 1}. göreve dokun`), `map-${next}`);
+  }
+  coach.hide();
+}
 const completedCount = chapter => progress.stars.slice(0, chapterMissionCount(chapter)).filter(stars => stars > 0).length;
 const pick = list => list[Math.floor(Math.random() * list.length)];
 const spoken = id => { const line = LINES[id]; return line && { text: lang === 'tr' ? line.tr : line.en, src: voicePath(id, lang), mood: line.mood, act: line.act }; };
@@ -92,8 +114,9 @@ async function playStory(id) {
   if (!scene || storyPlaying) return;
   companion.stop();
   storyPlaying = true;
+  coach.hide();
   try { await playScene(scene, { lang, voice: sound, reducedMotion: reducedRobotMotion }); markSeen(id); }
-  finally { storyPlaying = false; }
+  finally { storyPlaying = false; updateCoach(); }
 }
 function afterStory(next) {
   const id = pendingStory;
@@ -223,6 +246,7 @@ function render({ preserveCanvas = true } = {}) {
   updateRunAvailability();
   if (canvasScroll) app.querySelector('.puzzle-canvas')?.scrollTo(canvasScroll);
   disposeGuide = mountFirstMissionGuide(app, 'up');
+  queueMicrotask(updateCoach);
   disposePuzzle = mountPuzzleInteractions(app, {
     getWorkspace: () => puzzleWorkspace,
     enabled: () => !running,
@@ -387,8 +411,8 @@ function runDemo() {
   if (activeBoard().status === 'ready') runProgram(true);
   else demoPending = true;
 }
-function closeDialog() { clearVictory(); const dialog = document.querySelector('dialog'); if (dialog) { dialog.close(); dialog.remove(); } if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); dialogReturnFocus = null; }
-function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) afterStory(closeDialog); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); resetSeen(); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } const scene = e.target.closest('[data-story-scene]')?.dataset.storyScene; if (scene) { closeDialog(); playStory(scene); return; } if (action === 'close') afterStory(closeDialog); if (action === 'next') afterStory(() => openLevel(levelIndex + 1)); if (action === 'menu') afterStory(openMenu); if (action === 'home') openHome(); if (action === 'again') afterStory(() => { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); }); }); dialog.addEventListener('cancel', e => { e.preventDefault(); afterStory(closeDialog); }); dialog.showModal(); }
+function closeDialog() { clearVictory(); const dialog = document.querySelector('dialog'); if (dialog) { dialog.close(); dialog.remove(); queueMicrotask(updateCoach); } if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); dialogReturnFocus = null; }
+function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) afterStory(closeDialog); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); resetSeen(); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } const scene = e.target.closest('[data-story-scene]')?.dataset.storyScene; if (scene) { closeDialog(); playStory(scene); return; } if (action === 'close') afterStory(closeDialog); if (action === 'next') afterStory(() => openLevel(levelIndex + 1)); if (action === 'menu') afterStory(openMenu); if (action === 'home') openHome(); if (action === 'again') afterStory(() => { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); }); }); dialog.addEventListener('cancel', e => { e.preventDefault(); afterStory(closeDialog); }); dialog.showModal(); updateCoach(); }
 function showSuccess(score, previous = 0) {
   const final = levelIndex === chapterMissionCount(activeChapter) - 1;
   // Stars already earned on this mission stay marked as collected; only new ones are won again.

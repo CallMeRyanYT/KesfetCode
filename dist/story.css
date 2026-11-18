@@ -140,3 +140,25 @@ html[data-scenery-motion=off] .talking-robot-body{animation:none!important}
 @keyframes star-new-mid{0%{transform:translateY(-5px) scale(0) rotate(-40deg)}100%{transform:translateY(-5px) scale(1)}}
 .success-star-note{margin:-10px 0 14px;font-size:14px;font-weight:700;color:#6c7f8f;text-align:center}
 .success-star-note.is-new{color:#c47a00}
+
+/* ---------- Coach: what to tap next ---------- */
+.coach-layer{position:fixed;inset:0;z-index:1100;pointer-events:none;opacity:0;transition:opacity .35s}
+dialog .coach-layer{position:absolute}
+.coach-layer.is-shown{opacity:1}
+.coach-ring,.coach-hand,.coach-label{position:absolute;left:0;top:0;will-change:transform}
+.coach-ring{border:4px solid #ffd23f;box-shadow:0 0 0 4px #ff8a1f66,0 0 24px #ffd23f;box-sizing:border-box}
+.coach-ring::after{content:'';position:absolute;inset:-4px;border-radius:inherit;border:4px solid #ffd23f;animation:coach-ripple 1.6s ease-out infinite}
+@keyframes coach-ripple{from{transform:scale(1);opacity:.9}to{transform:scale(1.35);opacity:0}}
+.coach-hand{width:52px;height:60px;filter:drop-shadow(0 4px 3px #0e395677)}
+.coach-hand svg{width:100%;height:100%;overflow:visible;animation:coach-tap 1.6s ease-in-out infinite}
+.coach-hand path{fill:#fff;stroke:#368fa5;stroke-width:4;stroke-linejoin:round}
+.coach-touch{fill:none;stroke:#69d7ed;stroke-width:4;opacity:0;animation:coach-touch 1.6s ease-in-out infinite}
+@keyframes coach-tap{0%,100%{transform:translate(10px,12px)}45%,60%{transform:translate(0,0)}}
+@keyframes coach-touch{0%,40%,100%{opacity:0}50%,65%{opacity:1}}
+.coach-label{padding:9px 18px;border-radius:999px;background:#fff;color:#1d4560;border:3px solid #ff8a1f;font:800 18px/1.2 Outfit,system-ui,sans-serif;white-space:nowrap;box-shadow:0 6px 16px #00122d55}
+.coach-label::after{content:'';position:absolute;left:50%;bottom:-9px;width:14px;height:14px;margin-left:-7px;background:#fff;border-right:3px solid #ff8a1f;border-bottom:3px solid #ff8a1f;transform:rotate(45deg)}
+.coach-label.is-below::after{bottom:auto;top:-9px;transform:rotate(-135deg)}
+html[data-scenery-motion=off] .coach-layer *{animation:none!important}
+/* Room under the success buttons for the "Tap to continue" hint. */
+.game-dialog:has(> .coach-layer){overflow:visible}
+.game-dialog:has(> .coach-layer) .success-controls{margin-bottom:58px}
