@@ -73,8 +73,8 @@ export const LINES = {
   'react-run': { who: 'kasif', mood: 'happy', en: 'Here I go!', tr: 'İşte gidiyorum!' },
   'react-crystal-1': { who: 'kasif', mood: 'happy', en: 'Crystal collected!', tr: 'Kristal toplandı!' },
   'react-crystal-2': { who: 'kasif', mood: 'happy', en: 'Shiny!', tr: 'Pırıl pırıl!' },
-  'react-bump-1': { who: 'kasif', mood: 'surprised', en: 'Oops! Something is in the way.', tr: 'Hop! Yolda bir engel var.' },
-  'react-bump-2': { who: 'kasif', mood: 'sad', en: 'Ouch! Let’s try another route.', tr: 'Ay! Başka bir rota deneyelim.' },
+  'react-bump-1': { who: 'kasif', mood: 'dizzy', act: 'dizzy', en: 'Oops! Something is in the way.', tr: 'Hop! Yolda bir engel var.' },
+  'react-bump-2': { who: 'kasif', mood: 'dizzy', act: 'dizzy', en: 'Ouch! Let’s try another route.', tr: 'Ay! Başka bir rota deneyelim.' },
   'react-stuck': { who: 'kasif', mood: 'thinking', en: 'Hmm, I stopped before the goal.', tr: 'Hmm, hedefe varmadan durdum.' },
   'react-win-1': { who: 'kasif', mood: 'happy', en: 'We did it!', tr: 'Başardık!' },
   'react-win-2': { who: 'kasif', mood: 'happy', en: 'Woo-hoo! Mission complete!', tr: 'Yuppi! Görev tamam!' }

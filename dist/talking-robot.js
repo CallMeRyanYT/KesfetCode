@@ -2,8 +2,8 @@
 // in the same tilt as its screen blinks, changes mood and moves its mouth in
 // time with recorded voice lines.
 
-export const MOODS = ['neutral', 'happy', 'surprised', 'thinking', 'sad'];
-export const ACTIONS = ['hop', 'wiggle', 'celebrate', 'nod', 'lean'];
+export const MOODS = ['neutral', 'happy', 'surprised', 'thinking', 'sad', 'dizzy'];
+export const ACTIONS = ['hop', 'wiggle', 'celebrate', 'nod', 'lean', 'dizzy'];
 
 /** Mouth outline for a mood at rest, or an open talking mouth (0 = closed, 1 = wide). */
 export function mouthShape(mood = 'neutral', open = 0) {
@@ -16,18 +16,19 @@ export function mouthShape(mood = 'neutral', open = 0) {
     case 'surprised': return { d: 'M-24 6a24 30 0 1 0 48 0a24 30 0 1 0-48 0', filled: true };
     case 'thinking': return { d: 'M-46 10Q10 2 52 -6', filled: false };
     case 'sad': return { d: 'M-70 30Q0 -22 70 30', filled: false };
+    case 'dizzy': return { d: 'M-72 8q18-20 36 0t36 0t36 0t36 0', filled: false };
     default: return { d: 'M-80 -6Q0 46 80 -6', filled: false };
   }
 }
 
 // Each feature has a wide, faint copy underneath: a glow without an SVG blur
 // filter, so the face never has to be re-filtered while it animates.
-const EYE = `<rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28" stroke-width="26" fill-opacity=".25" stroke-opacity=".22"/><rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="46" stroke-opacity=".22" stroke-linecap="round"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="22" stroke-linecap="round"/>`;
+const EYE = `<rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28" stroke-width="26" fill-opacity=".25" stroke-opacity=".22"/><rect class="tr-eye-open" x="-28" y="-46" width="56" height="92" rx="28"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="46" stroke-opacity=".22" stroke-linecap="round"/><path class="tr-eye-happy" d="M-50 18Q0-52 50 18" fill="none" stroke-width="22" stroke-linecap="round"/><path class="tr-eye-dizzy" d="M0 0m-5 0a5 5 0 1 1 10 0a12 12 0 1 1-24 0a19 19 0 1 1 38 0a26 26 0 1 1-52 0" fill="none" stroke-width="9" stroke-linecap="round"/>`;
 
 /** Markup for a talking KAŞİF. `id` keeps SVG filter ids unique on a page. */
 export function talkingRobotMarkup({ mood = 'neutral', className = '', id = 'tr' } = {}) {
   const rest = mouthShape(mood);
-  return `<span class="talking-robot ${className}" data-mood="${mood}" data-talking-robot aria-hidden="true"><span class="talking-robot-body"><img class="talking-robot-img" src="/assets/kasif-talking.webp" alt="" draggable="false"><svg class="tr-face" viewBox="0 0 1142 1377" aria-hidden="true"><defs><linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M392 168Q560 120 760 110Q770 140 750 160Q560 170 405 222Z" fill="url(#${id}-gloss)"/><g transform="rotate(-10 590 315)"><g class="tr-blush" fill="#ff6f9c"><ellipse cx="420" cy="352" rx="44" ry="20"/><ellipse cx="760" cy="350" rx="44" ry="20"/></g><g fill="#ffd23f" stroke="#ffd23f"><g class="tr-look"><g class="tr-eye" transform="translate(477 276)">${EYE}</g><g class="tr-eye" transform="translate(703 275)">${EYE}</g></g><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="42" stroke-opacity=".2" stroke-linecap="round" stroke-linejoin="round"/><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></span></span>`;
+  return `<span class="talking-robot ${className}" data-mood="${mood}" data-talking-robot aria-hidden="true"><span class="tr-dizzy-stars" aria-hidden="true"><i>★</i><i>★</i><i>★</i></span><span class="talking-robot-body"><img class="talking-robot-img" src="/assets/kasif-talking.webp" alt="" draggable="false"><svg class="tr-face" viewBox="0 0 1142 1377" aria-hidden="true"><defs><linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M392 168Q560 120 760 110Q770 140 750 160Q560 170 405 222Z" fill="url(#${id}-gloss)"/><g transform="rotate(-10 590 315)"><g class="tr-blush" fill="#ff6f9c"><ellipse cx="420" cy="352" rx="44" ry="20"/><ellipse cx="760" cy="350" rx="44" ry="20"/></g><g fill="#ffd23f" stroke="#ffd23f"><g class="tr-look"><g class="tr-eye" transform="translate(477 276)">${EYE}</g><g class="tr-eye" transform="translate(703 275)">${EYE}</g></g><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="42" stroke-opacity=".2" stroke-linecap="round" stroke-linejoin="round"/><path class="tr-mouth" transform="translate(586 378)" d="${rest.d}" fill="${rest.filled ? '#2a1600' : 'none'}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></span></span>`;
 }
 
 let sharedContext = null;

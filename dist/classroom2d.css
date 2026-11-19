@@ -120,3 +120,14 @@ html[data-theme=dark] .classroom-full-grid .classroom-goal{border-color:#31BFA8;
    warmer sunlit lime so the route still reads at a glance between the props. */
 .classroom-reference-board.classroom-full-grid .classroom-route:not(.classroom-start):not(.classroom-goal){background:linear-gradient(145deg,#f1ff96,#cdee45 60%,#acd923);border-color:#86b915;box-shadow:inset 0 0 0 2px #fbffcf,inset 2px 2px 3px #ffffffb0,inset -2px -4px 3px #7ea51766,0 2px 2px #3e701c55}
 .classroom-reference-board .marker-E:not(.classroom-crystal){left:10%;top:-4%;width:80%;height:96%}
+/* Dizzy after a bump: one quick spin, a wobble, and stars circling his head. */
+.classroom-robot .dizzy-stars{position:absolute;left:50%;top:-14%;width:90%;height:40%;transform:translateX(-50%);display:none;pointer-events:none;z-index:6}
+.classroom-robot .dizzy-stars i{position:absolute;left:50%;top:50%;font-style:normal;font-size:calc(var(--classroom-tile)*.2);color:#ffd23f;text-shadow:0 0 4px #fff,0 1px 0 #b07b00;animation:dizzy-orbit 1s linear infinite}
+.classroom-robot .dizzy-stars i:nth-child(2){animation-delay:-.33s}
+.classroom-robot .dizzy-stars i:nth-child(3){animation-delay:-.66s}
+.classroom-robot.is-dizzy .dizzy-stars{display:block;animation:dizzy-fade 2.4s ease-out forwards}
+.classroom-robot.is-dizzy .classroom-robot-body{animation:dizzy-spin 2.4s ease-out!important}
+@keyframes dizzy-spin{0%{transform:rotate(0)}22%{transform:rotate(360deg)}36%{transform:rotate(345deg)}50%{transform:rotate(372deg)}64%{transform:rotate(352deg)}78%{transform:rotate(366deg)}100%{transform:rotate(360deg)}}
+@keyframes dizzy-orbit{from{transform:translate(-50%,-50%) rotate(0) translateX(calc(var(--classroom-tile)*.32)) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg) translateX(calc(var(--classroom-tile)*.32)) rotate(-360deg)}}
+@keyframes dizzy-fade{0%,80%{opacity:1}100%{opacity:0}}
+.classroom-board[data-motion=off] .classroom-robot.is-dizzy .classroom-robot-body,.classroom-board[data-motion=off] .dizzy-stars i{animation:none!important}

@@ -35,11 +35,12 @@ export class CompanionVoice {
   }
 
   /** A quick reaction; skipped while talking or within the cooldown. */
-  react(entry, { cooldown = 3000 } = {}) {
+  react(entry, { cooldown = 3000, urgent = false } = {}) {
     const now = this.now();
-    if (!entry || this.busy || now < this.cooldownUntil) return false;
+    // Urgent reactions (a bump) may cut in; others wait their turn.
+    if (!entry || (!urgent && this.busy) || now < this.cooldownUntil) return false;
     this.cooldownUntil = now + cooldown;
-    this.say([entry], { interrupt: false });
+    this.say([entry], { interrupt: urgent });
     return true;
   }
 
@@ -87,6 +88,8 @@ export class CompanionVoice {
       audio.play().catch(() => { meter = null; });
       timer = setTimeout(finish, duration + 4000);
     } else timer = setTimeout(finish, duration);
+    // Show the face and caption straight away, not only on the next animation frame.
+    this.apply(entry, 0);
     this.act(entry.act);
 
     const tick = () => {
@@ -125,7 +128,7 @@ export class CompanionVoice {
   act(name) {
     const body = this.doc?.querySelector('.mission-companion .talking-robot-body');
     if (!body || !name || this.doc.documentElement.dataset.sceneryMotion === 'off') return;
-    body.classList.remove('tr-hop', 'tr-wiggle', 'tr-celebrate', 'tr-nod', 'tr-lean');
+    body.classList.remove('tr-hop', 'tr-wiggle', 'tr-celebrate', 'tr-nod', 'tr-lean', 'tr-dizzy');
     void body.offsetWidth;
     body.classList.add(`tr-${name}`);
     setTimeout(() => body.classList.remove(`tr-${name}`), 1400);

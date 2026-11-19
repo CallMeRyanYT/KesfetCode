@@ -226,7 +226,7 @@ export class Classroom2D {
     this.robot = document.createElement('div');
     this.robot.className = 'classroom-robot';
     const robotArt = usesReferenceArt(this.level) ? '<span class="reference-robot-art"><img class="reference-robot" src="/assets/level-one-robot.webp" alt=""><svg class="reference-face" viewBox="0 0 1312 1199" aria-hidden="true"><path d="M465 407h150v100H465zm247 0h150v100H712z" fill="#0a0908"/><g class="reference-eyes"><path d="M490 484 Q536 391 583 484 M735 484 Q782 391 828 484" fill="none" stroke="#ffdf46" stroke-width="22" stroke-linecap="round"/></g></svg></span>' : robotIcon;
-    this.robot.innerHTML = `<span class="classroom-robot-body">${robotArt}</span><span class="classroom-win-spark spark-one">✦</span><span class="classroom-win-spark spark-two">✦</span>`;
+    this.robot.innerHTML = `<span class="classroom-robot-body">${robotArt}</span><span class="dizzy-stars" aria-hidden="true"><i>★</i><i>★</i><i>★</i></span><span class="classroom-win-spark spark-one">✦</span><span class="classroom-win-spark spark-two">✦</span>`;
     this.plane.append(this.robot);
   }
 
@@ -323,6 +323,10 @@ export class Classroom2D {
   paintState(state) {
     this.robot.classList.toggle('is-won', Boolean(state.won));
     this.robot.classList.toggle('has-error', Boolean(state.error));
+    // Bumping into a crate, rock or tree spins KAŞİF round and leaves him dizzy.
+    const dizzy = ['wall', 'door'].includes(state.error);
+    if (dizzy) { this.robot.classList.remove('is-dizzy'); void this.robot.offsetWidth; }
+    this.robot.classList.toggle('is-dizzy', dizzy);
     this.robot.classList.remove('is-picking');
     this.root.dataset.won = String(Boolean(state.won));
     for (const marker of this.markers) {

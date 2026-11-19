@@ -178,7 +178,7 @@ function updateCoach() {
 const completedCount = chapter => progress.stars.slice(0, chapterMissionCount(chapter)).filter(stars => stars > 0).length;
 const pick = list => list[Math.floor(Math.random() * list.length)];
 const spoken = id => { const line = LINES[id]; return line && { text: lang === 'tr' ? line.tr : line.en, src: voicePath(id, lang), mood: line.mood, act: line.act }; };
-const react = kind => { if (view === 'game' && activeChapter === 0) companion.react(spoken(pick(REACTIONS[kind]))); };
+const react = kind => { if (view === 'game' && activeChapter === 0) companion.react(spoken(pick(REACTIONS[kind])), { urgent: kind === 'bump' }); };
 function speakMissionOpening() {
   if (view !== 'game' || activeChapter !== 0) return;
   const entries = [];
