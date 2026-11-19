@@ -37,17 +37,19 @@ test('Explorer fits the whole painted road and ends at the rocket launch pad', (
   assert.match(html, /mission-node [^"]*node-finale"[^>]*data-level="14"/);
   assert.match(html, /class="map-stairway"/);
   assert.match(html, /map-layout map-layout-fitted/);
-  assert.match(html, /<aside class="map-sidepanel"><nav class="world-selector world-legend"/);
+  // The map is the main thing: no world cards, and stars and crystals sit top right.
+  assert.doesNotMatch(html, /world-legend|map-sidepanel|star-progress/);
+  assert.match(html, /class="map-hud"[\s\S]*star\.svg[\s\S]*crystal\.svg[\s\S]*class="adventure-tools"/);
   assert.match(html, /data-mask="\/assets\/journey-water-mask.png"/);
   assert.match(html, /data-illustration="birds"/);
   assert.doesNotMatch(adventureMenu({...options, chapter: 1}), /map-layout-fitted|map-stairway|node-finale/);
 });
-test('Chapter names and ages are translated and later campaign previews are identified', () => {
+test('Level cards show just the translated chapter names', () => {
   const en = adventureMenu({...options,page:'chapters'});
   const tr = adventureMenu({...options,page:'chapters',lang:'tr'});
-  for (const name of ['EXPLORER','INVENTOR','CODE MASTER','Ages 4–7','Ages 7–10','Ages 10–12+']) assert.ok(en.includes(name));
-  for (const name of ['KAŞİF','MUCİT','KOD USTASI','4–7 yaş','7–10 yaş','10–12+ yaş']) assert.ok(tr.includes(name));
-  assert.equal([...en.matchAll(/Preview · shared training missions/g)].length,2);
+  for (const name of ['EXPLORER','INVENTOR','CODE MASTER']) assert.ok(en.includes(name));
+  for (const name of ['KAŞİF','MUCİT','KOD USTASI']) assert.ok(tr.includes(name));
+  assert.doesNotMatch(en, /Ages 4–7|Preview · shared training missions|15 missions · 3 worlds/);
 });
 
 test('Home animates the original illustration and map water has no dotted overlay',()=>{
