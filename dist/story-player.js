@@ -5,8 +5,9 @@ import { talkingRobotMarkup, TalkingRobot, voiceMeter } from './talking-robot.js
 
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-// Voices play a little faster than recorded (pitch is kept), and every pause is short.
-export const VOICE_RATE = 1.2;
+// Voice files are sped up when generated (scripts/voices.mjs), so they play at
+// 1× here: live time-stretching on tablets made speech choppy. Pauses are short.
+export const VOICE_RATE = 1;
 const NAMES = { kasif: ['KAŞİF', 'KAŞİF'], nova: ['NOVA', 'NOVA'], you: ['YOU', 'SEN'] };
 const GEM = '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M20 2 36 16 20 46 4 16Z" fill="#7ff4ff" stroke="#1d9bb5" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 16h32M20 2l-7 14 7 30 7-30Z" fill="none" stroke="#1d9bb5" stroke-width="1.6" stroke-linejoin="round"/><path d="M11 12l5-5" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>';
 const NOVA_ORB = '<svg viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="nova-core" cx="42%" cy="38%"><stop stop-color="#ffffff"/><stop offset=".35" stop-color="#9ff4ff"/><stop offset=".75" stop-color="#2a9fe8"/><stop offset="1" stop-color="#1650b8"/></radialGradient></defs><circle class="nova-ring nova-ring-a" cx="60" cy="60" r="54" fill="none" stroke="#8ff1ff" stroke-width="2" stroke-dasharray="14 10"/><circle class="nova-ring nova-ring-b" cx="60" cy="60" r="45" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.5" stroke-dasharray="4 8"/><circle class="nova-core" cx="60" cy="60" r="34" fill="url(#nova-core)"/><path d="M44 50q4-6 9 0m14 0q4-6 9 0" stroke="#0d3a6e" stroke-width="3.5" fill="none" stroke-linecap="round"/><path class="nova-mouth" d="M50 68q10 7 20 0" stroke="#0d3a6e" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>';
@@ -60,10 +61,11 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
   const choices = stage.querySelector('.story-choices');
   const fx = stage.querySelector('.story-fx');
   const counter = stage.querySelector('.story-counter');
-  let finished = false, audio = null, advance = null, novaFrame = 0;
+  let finished = false, audio = null, advance = null, novaFrame = 0, currentMeter = null;
   requestAnimationFrame(() => stage.classList.add('is-open'));
 
   const stopVoice = () => {
+    currentMeter?.release?.(); currentMeter = null;
     if (audio) { audio.pause(); audio.src = ''; audio = null; }
     robot.stopTalking();
     cancelAnimationFrame(novaFrame); nova?.style.setProperty('--level', 0); nova?.classList.remove('is-talking');
@@ -93,7 +95,7 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
         audio.playbackRate = VOICE_RATE;
         audio.preservesPitch = true;
         duration = audio.duration * 1000 / VOICE_RATE;
-        meter = voiceMeter(audio);
+        meter = voiceMeter(audio); currentMeter = meter;
         audio.play().catch(() => { meter = null; });
       } else audio = null;
     }

@@ -35,6 +35,11 @@ const CAST = {
   }
 };
 const LANG = { en: 'en-US', tr: 'tr-TR' };
+// Speed and pauses are baked into the files at full quality. (Speeding up at
+// playback time made tablets time-stretch live, which sounded choppy.)
+const SPEED = 1.2;
+// Trim leading silence and shorten long sentence pauses to about a third of a second.
+const TRIM = 'silenceremove=start_periods=1:start_threshold=-45dB:stop_periods=-1:stop_duration=0.35:stop_threshold=-45dB:stop_silence=0.3';
 
 const manifest = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : { lines: {}, recorded: [] };
 const force = process.argv.includes('--force');
@@ -69,7 +74,7 @@ for (const [id, line] of Object.entries(lines)) {
     const setup = CAST[line.who][lang];
     const text = line[lang];
     if (!text) continue;
-    const signature = createHash('sha1').update(JSON.stringify([text, setup, CAST[line.who].filter])).digest('hex').slice(0, 12);
+    const signature = createHash('sha1').update(JSON.stringify([text, setup, CAST[line.who].filter, SPEED, TRIM])).digest('hex').slice(0, 12);
     const out = join(OUT, lang, `${id}.mp3`);
     if (!force && manifest.lines[key] === signature && existsSync(out)) continue;
     jobs.push({ id, lang, key, signature, text, who: line.who, setup, wav: join(work, `${lang}-${id}.wav`), out });
@@ -86,7 +91,7 @@ for (const job of jobs) {
   const pitch = job.setup.pitch || 1.06;
   const filter = CAST[job.who].filter.replace('PITCH', String(Math.round(24000 * pitch))).replace('TEMPO', (1 / pitch * 1.0).toFixed(3));
   // Trim the synthesiser's leading silence, add character, keep files small.
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', job.wav, '-af', `silenceremove=start_periods=1:start_threshold=-45dB,${filter},loudnorm=I=-16:TP=-1.5:LRA=11,apad=pad_dur=0.15`, '-ac', '1', '-ar', '44100', '-b:a', '64k', job.out]);
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', job.wav, '-af', `${TRIM},${filter},atempo=${SPEED},loudnorm=I=-16:TP=-1.5:LRA=11,apad=pad_dur=0.15`, '-ac', '1', '-ar', '44100', '-b:a', '64k', job.out]);
   manifest.lines[job.key] = job.signature;
 }
 writeFileSync(MANIFEST, JSON.stringify({ ...manifest, lines: Object.fromEntries(Object.entries(manifest.lines).sort()) }, null, 2));

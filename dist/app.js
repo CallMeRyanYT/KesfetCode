@@ -91,20 +91,37 @@ function countTutorialStep() {
   return { step: 'start', count, goal };
 }
 const TUTORIAL_LINES = { add: 'count-add', plus: 'count-plus', start: 'count-start', minus: 'count-minus', one: 'count-one' };
+// Route preview on every Explorer mission: one pointy arrow per step, numbered,
+// one colour per run in the same direction (Right ×3 is one colour, then Down ×4
+// another), and a red ✖ where KAŞİF would bump.
+const BLOCK_COLOURS = ['#ff8a1f', '#16b4cc', '#8b5cf6', '#ec4f8c', '#2fb35f', '#3b82f6', '#e8a800'];
+const STEP = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] };
 function paintFootprints() {
   const board = app.querySelector('.classroom-board');
   board?.querySelectorAll('.footstep').forEach(mark => mark.remove());
-  if (!board || !countTutorial() || running || state.won || !program.length) return;
+  if (!board || !twoDimensional() || running || state.won || !program.length) return;
   let actions;
   try { actions = expandProgram(level(), program, 1); } catch { return; }
-  let sim = initialState(level()), n = 0;
+  const tileAt = (row, col) => board.querySelector(`.classroom-tile[data-cell="${row},${col}"]`);
+  let sim = initialState(level()), n = 0, run = -1, lastType = null;
   for (const action of actions) {
+    const before = sim;
     sim = step(level(), sim, action.type);
-    if (sim.error) break;
-    const tile = board.querySelector(`.classroom-tile[data-cell="${sim.row},${sim.col}"]`);
+    if (action.type !== lastType) { run += 1; lastType = action.type; }
+    const colour = BLOCK_COLOURS[run % BLOCK_COLOURS.length];
+    if (sim.error) {
+      const delta = STEP[action.type];
+      const bump = delta && tileAt(before.row + delta[0], before.col + delta[1]);
+      if (bump) { const mark = document.createElement('span'); mark.className = 'footstep is-bump'; mark.textContent = '✖'; mark.style.animationDelay = `${(n + 1) * 70}ms`; bump.append(mark); }
+      break;
+    }
+    if (sim.row === before.row && sim.col === before.col) continue;
+    const tile = tileAt(sim.row, sim.col);
     if (tile) {
       const mark = document.createElement('span');
-      mark.className = 'footstep'; mark.textContent = ++n; mark.style.animationDelay = `${n * 70}ms`;
+      mark.className = 'footstep'; mark.dataset.dir = action.type;
+      mark.style.setProperty('--step-colour', colour); mark.style.animationDelay = `${++n * 70}ms`;
+      mark.innerHTML = `<b>${n}</b>`;
       tile.append(mark);
     }
     if (sim.won) break;
@@ -234,7 +251,7 @@ function showResetProgress() {
   showDialog(`<h2>${text('Start a new adventure?', 'Yeni bir maceraya başla?')}</h2><p>${text('This clears your saved stars and mission results on this browser. You can still choose any chapter.', 'Bu tarayıcıdaki kayıtlı yıldızların ve görev sonuçların silinir. Yine her seviyeyi seçebilirsin.')}</p><button class="primary dialog-primary" data-dialog="reset-progress">${text('Reset my progress', 'İlerlememi sıfırla')}</button><button class="text-button" data-dialog="close">${text('Keep my adventure', 'Maceramı koru')}</button>`);
 }
 function toolbox() {
-  return `<section class="puzzle-toolbox" data-puzzle-trash aria-labelledby="palette-title" aria-description="${text('Drop blocks here to delete them', 'Blokları silmek için buraya bırak')}."><h2 id="palette-title">${text('BLOCKS', 'BLOKLAR')}</h2><div class="block-palette">${editorActions().map(type => `<button class="code-block palette-block puzzle-palette-card ${type}" draggable="${!running}" data-add="${type}" ${disabled()} aria-label="${esc(text('Add', 'Ekle:') + ' ' + actionLabel(type))}">${icon(type)}<span>${actionLabel(type)}</span></button>`).join('')}</div><div class="puzzle-trash-overlay" aria-hidden="true">${icon('trash')}<span>${text('Drop to delete', 'Silmek için bırak')}</span></div></section>`;
+  return `<section class="puzzle-toolbox" data-puzzle-trash aria-labelledby="palette-title" aria-description="${text('Drop blocks here to delete them', 'Blokları silmek için buraya bırak')}."><h2 id="palette-title">${text('BLOCKS', 'BLOKLAR')}</h2><div class="block-palette">${editorActions().map(type => `<button class="code-block palette-block puzzle-palette-card ${type}" draggable="${!running}" data-add="${type}" ${disabled()} aria-label="${esc(text('Add', 'Ekle:') + ' ' + actionLabel(type))}">${icon(type)}<span>${actionLabel(type)}</span></button>`).join('')}</div><div class="puzzle-trash-overlay" aria-hidden="true"><svg class="trash-can" viewBox="0 0 64 76"><g class="trash-lid"><rect x="6" y="12" width="52" height="9" rx="4.5"/><rect x="23" y="5" width="18" height="9" rx="4"/></g><path class="trash-body" d="M11 25h42l-4.2 42.5a6 6 0 0 1-6 5.5H21.2a6 6 0 0 1-6-5.5Z"/><path class="trash-ribs" d="M25 34v30M32 34v30M39 34v30"/></svg><span>${text('Drop to delete', 'Silmek için bırak')}</span></div></section>`;
 }
 function programBudgetMarkup() {
   const placed = programBlockCount(program), target = missionBlockTarget(level());

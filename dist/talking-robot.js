@@ -38,7 +38,27 @@ const context = () => {
   return sharedContext;
 };
 
-/** Reads how loud a playing <audio> element is, 0–1, for lip-sync. */
+// One shared output for every voice line: a little headroom and a limiter, so
+// voices mixed with sound effects never clip. Built once, never per line.
+let voiceOutput = null;
+function sharedOutput(ctx) {
+  if (voiceOutput?.context === ctx) return voiceOutput.input;
+  const gain = ctx.createGain(); gain.gain.value = .82;
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 12; limiter.attack.value = .003; limiter.release.value = .2;
+  gain.connect(limiter); limiter.connect(ctx.destination);
+  voiceOutput = { context: ctx, input: gain };
+  return gain;
+}
+
+/** Live nodes per voice line; tests and diagnostics can read this. */
+export const voiceNodes = { live: 0 };
+
+/**
+ * Reads how loud a playing <audio> element is, 0–1, for lip-sync. The line's
+ * own nodes are disconnected when it ends or is stopped (call meter.release()),
+ * so a long session never piles up audio processing and starts to stutter.
+ */
 export function voiceMeter(audio) {
   try {
     const ctx = context();
@@ -47,18 +67,27 @@ export function voiceMeter(audio) {
     const source = ctx.createMediaElementSource(audio);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
-    // A little headroom and a limiter: voices mixed with sound effects never clip.
-    const gain = ctx.createGain(); gain.gain.value = .82;
-    const limiter = ctx.createDynamicsCompressor();
-    limiter.threshold.value = -10; limiter.knee.value = 6; limiter.ratio.value = 12; limiter.attack.value = .003; limiter.release.value = .2;
-    source.connect(analyser); source.connect(gain); gain.connect(limiter); limiter.connect(ctx.destination);
+    source.connect(analyser); source.connect(sharedOutput(ctx));
+    voiceNodes.live += 1;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true; voiceNodes.live -= 1;
+      try { source.disconnect(); analyser.disconnect(); } catch {}
+    };
+    audio.addEventListener('ended', release, { once: true });
+    audio.addEventListener('emptied', release, { once: true });
+    audio.addEventListener('error', release, { once: true });
     const samples = new Uint8Array(analyser.fftSize);
-    return () => {
+    const meter = () => {
+      if (released) return 0;
       analyser.getByteTimeDomainData(samples);
       let sum = 0;
       for (const value of samples) { const v = (value - 128) / 128; sum += v * v; }
       return Math.min(1, Math.sqrt(sum / samples.length) * 4.2);
     };
+    meter.release = release;
+    return meter;
   } catch { return null; }
 }
 

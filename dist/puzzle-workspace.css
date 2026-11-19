@@ -159,3 +159,19 @@ html[data-theme=light] .play-page.puzzle-mode .puzzle-canvas{background-color:#f
   .puzzle-trash{min-width:64px;min-height:48px;font-size:9px}
   .puzzle-hint{right:10px;top:104px;left:10px;max-width:none}
 }
+/* Dragging a program block: the palette fades away and a friendly trash can
+   takes its place; its lid opens when the block is over it. */
+.puzzle-toolbox .block-palette,.puzzle-toolbox h2{transition:opacity .18s,transform .18s}
+.puzzle-dragging-stack .puzzle-toolbox .block-palette,.puzzle-dragging-stack .puzzle-toolbox h2{opacity:0;transform:scale(.85);pointer-events:none}
+.puzzle-dragging-stack .puzzle-toolbox{background:#fff1ee;border-color:#f3a99c;transition:background .18s,border-color .18s}
+.puzzle-dragging-stack .puzzle-toolbox .puzzle-trash-overlay{display:flex;flex-direction:column;gap:8px;filter:none;color:#e0503f}
+.puzzle-trash-overlay .trash-can{width:64px;height:76px;overflow:visible;transition:transform .2s}
+.trash-can .trash-lid{fill:#ff7b66;stroke:#b8382a;stroke-width:3;transform-box:fill-box;transform-origin:8% 100%;transition:transform .2s}
+.trash-can .trash-body{fill:#ff8f7c;stroke:#b8382a;stroke-width:3;stroke-linejoin:round}
+.trash-can .trash-ribs{stroke:#c94a3a;stroke-width:3.5;stroke-linecap:round;opacity:.55}
+.puzzle-dragging-stack .puzzle-trash-overlay span{display:block;font:800 13px/1.2 Outfit,system-ui,sans-serif;text-align:center;color:#b8382a;max-width:90px}
+.puzzle-toolbox.puzzle-trash-active{background:#ffd8cf!important;border-color:#e0503f!important}
+.puzzle-trash-active .trash-can{transform:scale(1.12)}
+.puzzle-trash-active .trash-can .trash-lid{transform:rotate(-28deg) translate(-4px,-6px)}
+.puzzle-trash-active .trash-can .trash-body{fill:#ff6b55}
+html[data-theme=dark] .puzzle-dragging-stack .puzzle-toolbox{background:#3a2226;border-color:#c86a5d}

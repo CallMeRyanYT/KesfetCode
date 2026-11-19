@@ -15,8 +15,9 @@ export function hashText(text) {
 /** Voice file for a mission tip; tips change with the levels, so files follow the text. */
 export const tipVoicePath = (text, lang) => `/assets/voice/${lang === 'tr' ? 'tr' : 'en'}/tip-${hashText(text)}.mp3`;
 
-// Lines play 20% faster than recorded (pitch kept), matching the story scenes.
-export const VOICE_RATE = 1.2;
+// The voice files are already sped up when generated (scripts/voices.mjs);
+// live time-stretching on tablets made speech choppy, so lines play at 1×.
+export const VOICE_RATE = 1;
 const estimate = text => Math.max(1100, String(text).length * 50);
 
 export class CompanionVoice {
@@ -63,6 +64,7 @@ export class CompanionVoice {
       if (done) return;
       done = true;
       clearTimeout(timer); cancelAnimationFrame(this.frame); this.frame = 0;
+      meter?.release?.();
       if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load?.(); }
       if (this.current === token) this.current = null;
       if (advance) setTimeout(() => { if (!this.current) this.next(); }, 250);

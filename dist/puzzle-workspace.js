@@ -152,7 +152,7 @@ export function mountPuzzleInteractions(root, { getWorkspace, onDrop, renderGhos
     cancelAnimationFrame(frame); frame = 0;
     ghost?.remove(); cue?.remove(); ghost = cue = null;
     root.querySelectorAll('.puzzle-being-dragged,.puzzle-trash-active').forEach(node => node.classList.remove('puzzle-being-dragged', 'puzzle-trash-active'));
-    root.classList.remove('puzzle-dragging');
+    root.classList.remove('puzzle-dragging', 'puzzle-dragging-stack');
   };
   const end = () => {
     const hadDrag = !!active || !!nativeSource;
@@ -181,6 +181,8 @@ export function mountPuzzleInteractions(root, { getWorkspace, onDrop, renderGhos
   };
   const makeVisual = source => {
     root.classList.add('puzzle-dragging');
+    // Dragging a program block: the palette steps aside so the trash can is clear.
+    if (source.kind === 'stack') root.classList.add('puzzle-dragging-stack');
     ghost = document.createElement('div'); ghost.className = 'puzzle-ghost'; ghost.setAttribute('aria-hidden', 'true');
     ghost.innerHTML = renderGhost(source); document.body.append(ghost);
     cue = document.createElement('div'); cue.className = 'puzzle-snap-target'; cue.setAttribute('aria-hidden', 'true'); cue.hidden = true; plane.append(cue);

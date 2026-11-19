@@ -172,8 +172,15 @@ html[data-theme=dark] .success-totals span{background:#3a2c0e;color:#ffd77a}
 html[data-theme=dark] .success-totals .success-total-crystals{background:#0f3442;color:#8fe6f5}
 
 /* ---------- Mission 13: learning + and − ---------- */
-/* Numbered footprints: one for every step the block will take. */
-.classroom-tile .footstep{position:absolute;left:50%;top:50%;z-index:4;display:grid;place-items:center;width:44%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background:#fff;border:3px solid #ff8a1f;color:#c45a00;font:900 calc(var(--classroom-tile) * .24)/1 Outfit,system-ui,sans-serif;box-shadow:0 3px 6px #5a3a0f55;animation:footstep-pop .35s cubic-bezier(.3,1.6,.5,1) both;pointer-events:none}
+/* Route preview: a pointy arrow per step, coloured by the block it belongs to. */
+.classroom-tile .footstep{position:absolute;left:50%;top:50%;z-index:4;display:grid;place-items:center;width:62%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;animation:footstep-pop .3s cubic-bezier(.3,1.6,.5,1) both}
+.classroom-tile .footstep::before{content:'';position:absolute;inset:0;background:var(--step-colour,#ff8a1f);clip-path:polygon(0 30%,52% 30%,52% 4%,100% 50%,52% 96%,52% 70%,0 70%);filter:drop-shadow(0 2px 0 #0003);border-radius:2px}
+.classroom-tile .footstep[data-dir=down]::before{rotate:90deg}
+.classroom-tile .footstep[data-dir=left]::before{rotate:180deg}
+.classroom-tile .footstep[data-dir=up]::before{rotate:-90deg}
+.classroom-tile .footstep b{position:relative;display:grid;place-items:center;width:46%;aspect-ratio:1;border-radius:50%;background:#fff;color:var(--step-colour,#ff8a1f);font:900 calc(var(--classroom-tile) * .2)/1 Outfit,system-ui,sans-serif;box-shadow:0 1px 3px #0004}
+.classroom-tile .footstep.is-bump{width:48%;border-radius:50%;background:#e8473a;color:#fff;font:900 calc(var(--classroom-tile) * .26)/1 system-ui,sans-serif;box-shadow:0 0 0 3px #fff,0 3px 6px #0005}
+.classroom-tile .footstep.is-bump::before{content:none}
 @keyframes footstep-pop{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
 /* Many arrows = one arrow ×5, animated so the idea is seen, not read. */
 .count-lesson{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 10px 0;padding:10px 12px;border-radius:14px;background:#eaf8ff;border:2px dashed #7cc8ff;color:#0b5c78}
