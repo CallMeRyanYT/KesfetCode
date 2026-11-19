@@ -239,7 +239,7 @@ test('connecting a suffix anchors the chosen loose connector even when an older 
 });
 
 test('only commands attached to Start reach the real engine, including expanded direction counts', () => {
-  const mission = chapterMission(LEVELS[5], 0);
+  const mission = chapterMission(LEVELS[12], 0);
   let model = createPuzzleWorkspace([card('up', 4), card('down', 2)]);
   model = movePuzzleStack(model, source(1), free());
   assert.equal(puzzleBlockCount(model), 2);

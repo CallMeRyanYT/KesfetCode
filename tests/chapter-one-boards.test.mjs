@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, DIRECTIONS, initialState, step, simulate, scoreRun, missionTargetProgram, programBlockCount } from '../dist/engine.js';
-import { chapterMission, VIDEO_MAZES, videoMazeGrid, routeSteps } from '../dist/opening-missions.js';
+import { chapterMission, VIDEO_MAZES, EXPLORER_MAZES, COUNT_MAZES, videoMazeGrid, routeSteps } from '../dist/opening-missions.js';
 
 function histogram(grid) {
   return [...grid.join('')].filter(tile=>tile!=='#').reduce((counts,tile)=>({ ...counts, [tile]: (counts[tile]||0)+1 }),{});
@@ -45,7 +45,7 @@ for(const base of LEVELS) {
     assert.equal(scoreRun(mission,result.state,programBlockCount(reference)),3);
     assert.equal(mission.solution.length,mission.target);
     // Missions 1–12 are the Code.org mazes (tested below); later ones keep the authored campaign.
-    if(base.id>=5&&!VIDEO_MAZES[base.id]) {
+    if(base.id>=5&&!EXPLORER_MAZES[base.id]) {
       assert.deepEqual(histogram(mission.grid),histogram(base.grid));
       assert.equal(mission.target,base.target);
       assert.deepEqual(result.history,trace(base).history);
@@ -65,7 +65,7 @@ for(const base of LEVELS) {
 
 test('Boards that already fit keep every corridor, branch, and pickup at the same relative position', () => {
   for(const base of LEVELS.slice(4)) {
-    if(VIDEO_MAZES[base.id])continue;
+    if(EXPLORER_MAZES[base.id])continue;
     const source=crop(base.grid);
     if(source.length>8||source[0].length>8)continue;
     const mission=chapterMission(base,0);
@@ -182,4 +182,18 @@ test('Explorer missions 1–12 are Code.org Lesson 4 puzzles 2–13, cell for ce
     }
   }
   assert.equal(Object.keys(VIDEO_MAZES).length, 12);
+});
+
+test('Missions 13–15 teach and then use + and −: one tutorial run, then two harder mazes', () => {
+  const tutorial = chapterMission(LEVELS[12], 0);
+  assert.deepEqual(missionTargetProgram(tutorial), [{ type: 'right', count: 5 }], 'one Right block ×5');
+  assert.equal(COUNT_MAZES[13].tutorial, true);
+  for (const id of [14, 15]) {
+    const mission = chapterMission(LEVELS[id - 1], 0);
+    assert.equal(simulate(mission, mission.solution).won, true);
+    assert.ok(missionTargetProgram(mission).every(block => block.count >= 2), `mission ${id} repeats every move`);
+    // A dead-end tile tempts one step too many.
+    const overshoot = routeSteps(COUNT_MAZES[id].route.replace(/\d+/, n => String(Number(n) + 1)));
+    assert.equal(simulate(mission, overshoot).won, false, `mission ${id} punishes one step too many`);
+  }
 });

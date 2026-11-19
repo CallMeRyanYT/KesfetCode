@@ -4,7 +4,7 @@ import { LEVELS, MAX_DIRECTION_COUNT, initialState, simulate, expandProgram, rel
 import { chapterMission } from '../dist/opening-missions.js';
 
 const blocks = (...types) => types.map(type => ({ type }));
-const fixture = (grid, extra = {}) => ({ id: 6, grid, heading: 'right', robotRelative: false, curriculum: 0, energy: null, ...extra });
+const fixture = (grid, extra = {}) => ({ id: 13, grid, heading: 'right', robotRelative: false, curriculum: 0, energy: null, ...extra });
 
 test('physical card count ignores direction repetitions and counts every loop card only once', () => {
   const program = [{ type: 'right', count: 10 }, { type: 'repeat', count: 8, body: [{ type: 'down', count: 4 }, { type: 'collect' }] }, { type: 'launch' }];
@@ -14,8 +14,8 @@ test('physical card count ignores direction repetitions and counts every loop ca
   assert.throws(() => programBlockCount([{ type: 'repeat', count: 3 }]), /invalid-program/);
 });
 
-test('opening missions use one physical card per step until direction counts unlock at mission six', () => {
-  // Code.org puzzles 2–7: one card per tile until counts unlock at mission six.
+test('Explorer uses one physical card per step until the +/− tutorial at mission thirteen', () => {
+  // Code.org puzzles 2–7: one card per tile (counts unlock in mission 13's tutorial).
   assert.deepEqual(LEVELS.slice(0, 6).map(base => missionBlockTarget(chapterMission(base, 0))), [2, 2, 2, 3, 3, 2]);
   for (const base of LEVELS.slice(0, 5)) {
     const level = chapterMission(base, 0), reference = missionTargetProgram(level);

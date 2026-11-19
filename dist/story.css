@@ -170,3 +170,25 @@ html[data-scenery-motion=off] .coach-layer *{animation:none!important}
 .success-totals small{font-size:13px;opacity:.7;font-weight:700}
 html[data-theme=dark] .success-totals span{background:#3a2c0e;color:#ffd77a}
 html[data-theme=dark] .success-totals .success-total-crystals{background:#0f3442;color:#8fe6f5}
+
+/* ---------- Mission 13: learning + and − ---------- */
+/* Numbered footprints: one for every step the block will take. */
+.classroom-tile .footstep{position:absolute;left:50%;top:50%;z-index:4;display:grid;place-items:center;width:44%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);background:#fff;border:3px solid #ff8a1f;color:#c45a00;font:900 calc(var(--classroom-tile) * .24)/1 Outfit,system-ui,sans-serif;box-shadow:0 3px 6px #5a3a0f55;animation:footstep-pop .35s cubic-bezier(.3,1.6,.5,1) both;pointer-events:none}
+@keyframes footstep-pop{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
+/* Many arrows = one arrow ×5, animated so the idea is seen, not read. */
+.count-lesson{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 10px 0;padding:10px 12px;border-radius:14px;background:#eaf8ff;border:2px dashed #7cc8ff;color:#0b5c78}
+.count-lesson b{font-size:24px}
+.count-lesson-many,.count-lesson-one{display:flex;gap:3px}
+.count-lesson span{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:linear-gradient(#22c3d6,#0a97b0);color:#fff;font:900 18px/1 system-ui,sans-serif;box-shadow:0 3px 0 #06708a}
+.count-lesson-one{align-items:center;gap:6px}
+.count-lesson-one span{width:34px;height:34px}
+.count-lesson-one em{font:900 20px/1 Outfit,system-ui,sans-serif;font-style:normal;color:#c45a00}
+html[data-scenery-motion=on] .count-lesson-many span{animation:count-merge 3.2s ease-in-out infinite}
+html[data-scenery-motion=on] .count-lesson-many span:nth-child(2){animation-delay:.1s}
+html[data-scenery-motion=on] .count-lesson-many span:nth-child(3){animation-delay:.2s}
+html[data-scenery-motion=on] .count-lesson-many span:nth-child(4){animation-delay:.3s}
+html[data-scenery-motion=on] .count-lesson-many span:nth-child(5){animation-delay:.4s}
+html[data-scenery-motion=on] .count-lesson-one{animation:count-appear 3.2s ease-in-out infinite}
+@keyframes count-merge{0%,25%{transform:none;opacity:1}55%,80%{transform:translateX(18px) scale(.6);opacity:.25}100%{transform:none;opacity:1}}
+@keyframes count-appear{0%,40%{transform:scale(1)}55%{transform:scale(1.25)}70%,100%{transform:scale(1)}}
+html[data-theme=dark] .count-lesson{background:#123a52;color:#cfefff}

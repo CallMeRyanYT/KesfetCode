@@ -144,8 +144,8 @@ const openingTips = {
     'Yol köşe dönüyor! Önce bir kare sola, sonra aşağı inerek hedefe git.'
   ],
   6: [
-    'New power: use + and − on a block to move several tiles at once! Go right, then up to the goal.',
-    'Yeni güç: bir bloğun + ve − düğmeleriyle tek seferde birkaç kare ilerle! Önce sağa, sonra yukarı git.'
+    'The path turns again! Go right first, then up to the goal.',
+    'Yol yine dönüyor! Önce sağa, sonra yukarı git.'
   ],
   7: [
     'The path zigzags! Follow the grass one turn at a time to reach the goal.',
@@ -170,6 +170,18 @@ const openingTips = {
   12: [
     'Something is in the way again! This time the path goes around it underneath.',
     'Yine bir engel var! Bu sefer yol onun altından dolaşıyor.'
+  ],
+  13: [
+    'Wow, this path is long! Let me show you a new trick: one block can take many steps.',
+    'Vay, bu yol çok uzun! Sana yeni bir numara göstereyim: tek bir blok birçok adım atabilir.'
+  ],
+  14: [
+    'Use + and − to make each block go the right distance. Watch out for the extra tile at the corner!',
+    'Her bloğun mesafesini + ve − ile ayarla. Köşedeki fazla kareye dikkat et!'
+  ],
+  15: [
+    'The rocket is waiting! Count the steps in each direction, and do not go up too far.',
+    'Roket bizi bekliyor! Her yöndeki adımları say ve fazla yukarı çıkma.'
   ]
 };
 

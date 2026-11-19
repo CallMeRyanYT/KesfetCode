@@ -22,6 +22,17 @@ export const VIDEO_MAZES = {
   11: { start: [2, 2], goal: [4, 3], path: [[2, 3], [3, 3]], route: 'R1 D2' },
   12: { start: [3, 5], goal: [3, 2], path: [[4, 5], [4, 4], [4, 3], [3, 3]], route: 'D1 L2 U1 L1' }
 };
+// Missions 13–15 continue in the same style once moves can repeat (+ and −).
+// 13 is the tutorial: one long straight run. 14 and 15 are a little harder,
+// with a dead-end tile that tempts one step too many.
+export const COUNT_MAZES = {
+  13: { start: [4, 1], goal: [4, 6], path: [[4, 2], [4, 3], [4, 4], [4, 5]], route: 'R5', tutorial: true },
+  14: { start: [1, 1], goal: [4, 5], path: [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [3, 5]], route: 'R4 D3' },
+  15: { start: [6, 1], goal: [5, 7], path: [[5, 1], [4, 1], [3, 1], [2, 1], [1, 1], [3, 2], [3, 3], [3, 4], [3, 5], [4, 5], [5, 5], [5, 6]], route: 'U3 R4 D2 R2' }
+};
+export const EXPLORER_MAZES = { ...VIDEO_MAZES, ...COUNT_MAZES };
+/** True for Explorer's tutorial mission that teaches the +/− repeat control. */
+export const isCountTutorial = (chapterIndex, missionId) => chapterIndex === 0 && Boolean(COUNT_MAZES[missionId]?.tutorial);
 const NAMES = { U: 'up', R: 'right', D: 'down', L: 'left' };
 const LABELS = { up: ['Up', 'Yukarı'], right: ['Right', 'Sağ'], down: ['Down', 'Aşağı'], left: ['Left', 'Sol'] };
 
@@ -38,7 +49,7 @@ export const routeSteps = route => route.split(' ').flatMap(part => Array.from({
 
 export function chapterMission(baseLevel, chapterIndex) {
   const mission = { ...baseLevel, robotRelative: chapterIndex !== 0, allowTurns: chapterIndex > 0, curriculum: chapterIndex };
-  const maze = chapterIndex === 0 ? VIDEO_MAZES[baseLevel.id] : null;
+  const maze = chapterIndex === 0 ? EXPLORER_MAZES[baseLevel.id] : null;
   if (!maze) return chapterIndex === 0 ? chapterOneBoard(mission) : mission;
   const solution = routeSteps(maze.route);
   const groups = maze.route.split(' ').map(part => ({ type: NAMES[part[0]], count: Number(part.slice(1)) }));
