@@ -99,7 +99,8 @@ const STEP = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] };
 function paintFootprints() {
   const board = app.querySelector('.classroom-board');
   board?.querySelectorAll('.footstep').forEach(mark => mark.remove());
-  if (!board || !twoDimensional() || running || state.won || !program.length) return;
+  // Only where a new idea is introduced: the first mission and the + and − tutorial.
+  if (!board || !(firstMission() || countTutorial()) || running || state.won || !program.length) return;
   let actions;
   try { actions = expandProgram(level(), program, 1); } catch { return; }
   const tileAt = (row, col) => board.querySelector(`.classroom-tile[data-cell="${row},${col}"]`);
@@ -116,7 +117,8 @@ function paintFootprints() {
       break;
     }
     if (sim.row === before.row && sim.col === before.col) continue;
-    const tile = tileAt(sim.row, sim.col);
+    // The crystal stays visible: no arrow is drawn on the goal tile.
+    const tile = sim.won ? null : tileAt(sim.row, sim.col);
     if (tile) {
       const mark = document.createElement('span');
       mark.className = 'footstep'; mark.dataset.dir = action.type;
