@@ -5,6 +5,8 @@ import { talkingRobotMarkup, TalkingRobot, voiceMeter } from './talking-robot.js
 
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+// Voices play a little faster than recorded (pitch is kept), and every pause is short.
+export const VOICE_RATE = 1.2;
 const NAMES = { kasif: ['KAŞİF', 'KAŞİF'], nova: ['NOVA', 'NOVA'], you: ['YOU', 'SEN'] };
 const GEM = '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M20 2 36 16 20 46 4 16Z" fill="#7ff4ff" stroke="#1d9bb5" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 16h32M20 2l-7 14 7 30 7-30Z" fill="none" stroke="#1d9bb5" stroke-width="1.6" stroke-linejoin="round"/><path d="M11 12l5-5" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>';
 const NOVA_ORB = '<svg viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="nova-core" cx="42%" cy="38%"><stop stop-color="#ffffff"/><stop offset=".35" stop-color="#9ff4ff"/><stop offset=".75" stop-color="#2a9fe8"/><stop offset="1" stop-color="#1650b8"/></radialGradient></defs><circle class="nova-ring nova-ring-a" cx="60" cy="60" r="54" fill="none" stroke="#8ff1ff" stroke-width="2" stroke-dasharray="14 10"/><circle class="nova-ring nova-ring-b" cx="60" cy="60" r="45" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.5" stroke-dasharray="4 8"/><circle class="nova-core" cx="60" cy="60" r="34" fill="url(#nova-core)"/><path d="M44 50q4-6 9 0m14 0q4-6 9 0" stroke="#0d3a6e" stroke-width="3.5" fill="none" stroke-linecap="round"/><path class="nova-mouth" d="M50 68q10 7 20 0" stroke="#0d3a6e" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>';
@@ -25,7 +27,7 @@ export function wordTimings(text, duration) {
   return words.map((word, i) => { const at = elapsed; elapsed += weights[i] / total * duration; return { word, at }; });
 }
 
-export function estimatedDuration(text) { return Math.max(1400, text.length * 62); }
+export function estimatedDuration(text) { return Math.max(1100, text.length * 50); }
 
 /**
  * Plays a scene and resolves when it ends or is skipped.
@@ -88,7 +90,9 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
       await loaded;
       if (finished) return;
       if (audio && Number.isFinite(audio.duration) && audio.duration > 0) {
-        duration = audio.duration * 1000;
+        audio.playbackRate = VOICE_RATE;
+        audio.preservesPitch = true;
+        duration = audio.duration * 1000 / VOICE_RATE;
         meter = voiceMeter(audio);
         audio.play().catch(() => { meter = null; });
       } else audio = null;
@@ -113,10 +117,10 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
       };
       requestAnimationFrame(light);
       const complete = () => { done = true; spans.forEach(span => span.classList.add('is-spoken')); };
-      let timer = setTimeout(() => { complete(); stopVoice(); subtitle.classList.add('is-waiting'); timer = setTimeout(finish, scene.short ? 900 : 1400); }, duration + 150);
+      let timer = setTimeout(() => { complete(); stopVoice(); subtitle.classList.add('is-waiting'); timer = setTimeout(finish, scene.short ? 450 : 650); }, duration + 150);
       const finish = () => { clearTimeout(timer); done = true; advance = null; subtitle.classList.remove('is-waiting'); resolve(); };
       advance = () => {
-        if (!done) { clearTimeout(timer); complete(); stopVoice(); subtitle.classList.add('is-waiting'); advance = finish; timer = setTimeout(finish, 1600); }
+        if (!done) { clearTimeout(timer); complete(); stopVoice(); subtitle.classList.add('is-waiting'); advance = finish; timer = setTimeout(finish, 900); }
         else finish();
       };
     });
@@ -159,7 +163,7 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     counter.hidden = false;
     const value = counter.querySelector('b');
     const from = Number(value.textContent) || 0;
-    if (count <= from) { value.textContent = count; return wait(400); }
+    if (count <= from) { value.textContent = count; return wait(250); }
     const box = stage.getBoundingClientRect(), target = counter.getBoundingClientRect();
     const flights = Math.min(5, count - from);
     for (let i = 0; i < flights; i++) {
@@ -170,10 +174,10 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
       fx.append(gem);
       setTimeout(() => gem.remove(), 1500 + i * 140);
     }
-    await wait(reducedMotion ? 200 : 900 + flights * 140);
+    await wait(reducedMotion ? 150 : 600 + flights * 100);
     counter.classList.remove('is-bump'); void counter.offsetWidth; counter.classList.add('is-bump');
     value.textContent = count;
-    await wait(500);
+    await wait(250);
   }
 
   async function launch() {
@@ -188,8 +192,8 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     flame.className = 'story-liftoff';
     flame.style.cssText = `left:${base.x}px;top:${base.y}px`;
     fx.append(flame);
-    if (!reducedMotion) for (let i = 0; i < 14; i++) setTimeout(() => burst('smoke', 2, { x: base.x, y: base.y + 10 }), i * 120);
-    await wait(reducedMotion ? 600 : 2600);
+    if (!reducedMotion) for (let i = 0; i < 14; i++) setTimeout(() => burst('smoke', 2, { x: base.x, y: base.y + 10 }), i * 85);
+    await wait(reducedMotion ? 400 : 1800);
     stage.classList.add('is-flash');
     await wait(400);
     bg.style.backgroundImage = "url('/assets/spaceport-live.webp')";
@@ -206,11 +210,11 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     card.innerHTML = `<strong>${esc(pair[L])}</strong>`;
     stage.append(card);
     requestAnimationFrame(() => card.classList.add('is-shown'));
-    await new Promise(resolve => { const done = () => { clearTimeout(timer); resolve(); }; const timer = setTimeout(done, 3200); card.addEventListener('click', done, { once: true }); advance = done; });
+    await new Promise(resolve => { const done = () => { clearTimeout(timer); resolve(); }; const timer = setTimeout(done, 2200); card.addEventListener('click', done, { once: true }); advance = done; });
   }
 
   const run = (async () => {
-    await wait(scene.short ? 250 : 700);
+    await wait(scene.short ? 150 : 350);
     for (const step of scene.steps) {
       if (finished) break;
       if (step.line) await sayLine(step.line);
@@ -219,8 +223,8 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
         if (finished) break;
         await sayLine(answer);
         if (reply) await sayLine(reply);
-      } else if (step.fx === 'sparkles') { burst('sparkle', 16); robot.act('celebrate'); await wait(700); }
-      else if (step.fx === 'boot') { stage.classList.remove('is-asleep'); stage.classList.add('is-booting'); await wait(reducedMotion ? 300 : 1300); stage.classList.remove('is-booting'); }
+      } else if (step.fx === 'sparkles') { burst('sparkle', 16); robot.act('celebrate'); await wait(450); }
+      else if (step.fx === 'boot') { stage.classList.remove('is-asleep'); stage.classList.add('is-booting'); await wait(reducedMotion ? 250 : 850); stage.classList.remove('is-booting'); }
       else if (step.fx === 'crystals') await crystals(step.count);
       else if (step.fx === 'launch') await launch();
       else if (step.title) await titleCard(step.title);
@@ -243,6 +247,6 @@ export function playScene(scene, { lang = 'en', voice = true, reducedMotion = fa
     };
     document.addEventListener('keydown', keys, true);
     stage.querySelector('.story-skip').addEventListener('click', close);
-    run.then(() => wait(scene.short ? 200 : 600)).then(close);
+    run.then(() => wait(scene.short ? 100 : 300)).then(close);
   });
 }

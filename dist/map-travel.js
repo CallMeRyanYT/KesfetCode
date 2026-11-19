@@ -1,7 +1,7 @@
 // KAŞİF walks along the Explorer map from where the child last saw him to the
 // next mission, turning each finished mission green as he passes it.
 const KEY = chapter => `kesfet-map-position-${chapter}`;
-export const HOP_MS = 650;
+export const HOP_MS = 450;
 
 /** Where the walk starts and ends. A first visit or a reset just places him. */
 export function travelPlan(stored, target) {
@@ -56,11 +56,11 @@ export function mountMapTravel(root, { chapter = 0, target, reducedMotion = fals
     timer = setTimeout(() => {
       const left = nodes[at - 1];
       if (passing.has(left)) { left.classList.add('earned', 'just-earned'); passing.delete(left); }
-      if (at < to) timer = setTimeout(hop, 120);
+      if (at < to) timer = setTimeout(hop, 60);
       else finish();
     }, HOP_MS);
   };
-  timer = setTimeout(hop, 600);
+  timer = setTimeout(hop, 350);
   return () => {
     if (stopped) return;
     stopped = true; clearTimeout(timer);

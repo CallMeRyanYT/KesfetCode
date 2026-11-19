@@ -219,10 +219,10 @@ html[data-scenery-motion=on] .map-rocket-glow{animation:map-rocket-glow 2.8s eas
   .adventure-map:has(.map-layout-fitted) .map-layout-fitted{margin-top:14px}
 }
 /* KAŞİF walking the Explorer map: he stands just above the mission he is on. */
-.map-traveler{position:absolute;z-index:3;width:clamp(30px,9cqw,52px);transform:translate(-50%,-205%);pointer-events:none;transition:left .65s ease-in-out,top .65s ease-in-out;filter:drop-shadow(0 4px 3px #00102a88)}
+.map-traveler{position:absolute;z-index:3;width:clamp(30px,9cqw,52px);transform:translate(-50%,-205%);pointer-events:none;transition:left .45s ease-in-out,top .45s ease-in-out;filter:drop-shadow(0 4px 3px #00102a88)}
 .map-traveler.is-instant{transition:none}
 .map-traveler img{display:block;width:100%;height:auto}
-.map-traveler.is-walking img{animation:traveler-hop .65s ease-in-out infinite}
+.map-traveler.is-walking img{animation:traveler-hop .45s ease-in-out infinite}
 @keyframes traveler-hop{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-22%) rotate(-6deg)}60%{transform:translateY(-8%) rotate(4deg)}}
 .chapter-map-0 .mission-node.just-earned .node-orb{animation:node-greened .7s cubic-bezier(.3,1.6,.5,1)}
 @keyframes node-greened{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}

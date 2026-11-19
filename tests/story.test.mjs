@@ -72,7 +72,7 @@ test('Subtitles light words in order across the spoken duration', () => {
   assert.deepEqual(words.map(w => w.word), ['Hello', 'there,', 'explorer!']);
   assert.equal(words[0].at, 0);
   assert.ok(words[1].at > 0 && words[2].at > words[1].at && words[2].at < 3000);
-  assert.ok(estimatedDuration('Hi') >= 1400);
+  assert.ok(estimatedDuration('Hi') >= 1000, 'even a short line stays on screen long enough to read');
 });
 
 test('Effects land on the painted rocket for any screen shape', () => {

@@ -15,7 +15,9 @@ export function hashText(text) {
 /** Voice file for a mission tip; tips change with the levels, so files follow the text. */
 export const tipVoicePath = (text, lang) => `/assets/voice/${lang === 'tr' ? 'tr' : 'en'}/tip-${hashText(text)}.mp3`;
 
-const estimate = text => Math.max(1400, String(text).length * 62);
+// Lines play 20% faster than recorded (pitch kept), matching the story scenes.
+export const VOICE_RATE = 1.2;
+const estimate = text => Math.max(1100, String(text).length * 50);
 
 export class CompanionVoice {
   constructor({ enabled = () => true, doc = globalThis.document, now = () => performance.now() } = {}) {
@@ -63,15 +65,17 @@ export class CompanionVoice {
       clearTimeout(timer); cancelAnimationFrame(this.frame); this.frame = 0;
       if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load?.(); }
       if (this.current === token) this.current = null;
-      if (advance) setTimeout(() => { if (!this.current) this.next(); }, 350);
+      if (advance) setTimeout(() => { if (!this.current) this.next(); }, 250);
     };
     const token = { entry, finish };
     this.current = token;
     if (this.enabled() && entry.src && typeof Audio !== 'undefined') {
       audio = new Audio(entry.src);
+      audio.playbackRate = VOICE_RATE;
+      audio.preservesPitch = true;
       audio.addEventListener('loadedmetadata', () => {
         if (Number.isFinite(audio.duration) && audio.duration > 0) {
-          duration = audio.duration * 1000;
+          duration = audio.duration * 1000 / VOICE_RATE;
           clearTimeout(timer); timer = setTimeout(finish, Math.max(0, duration - (this.now() - started)) + 600);
         }
       }, { once: true });
