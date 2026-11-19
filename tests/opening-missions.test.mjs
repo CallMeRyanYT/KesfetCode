@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { LEVELS, DIRECTIONS, initialState, relativeSolution, simulate, step, scoreRun, availableActions } from '../dist/engine.js';
 import { chapterMission, isOpeningMission } from '../dist/opening-missions.js';
 
+// Code.org Course 1, Lesson 4, puzzles 2–5 (see VIDEO_MAZES).
 const openingCases = [
-  { id: 1, direction: 'up', moves: 1, start: [4, 3], finish: [3, 3], playable: 2 },
-  { id: 2, direction: 'left', moves: 2, start: [3, 4], finish: [3, 2], playable: 3 },
-  { id: 3, direction: 'down', moves: 2, start: [2, 3], finish: [4, 3], playable: 3 },
-  { id: 4, direction: 'right', moves: 4, start: [3, 1], finish: [3, 5], playable: 5 }
+  { id: 1, direction: 'right', moves: 2, start: [4, 2], finish: [4, 4], playable: 3 },
+  { id: 2, direction: 'down', moves: 2, start: [3, 4], finish: [5, 4], playable: 3 },
+  { id: 3, direction: 'up', moves: 2, start: [4, 4], finish: [2, 4], playable: 3 },
+  { id: 4, direction: 'right', moves: 3, start: [3, 2], finish: [3, 5], playable: 4 }
 ];
 
 for (const route of openingCases) {

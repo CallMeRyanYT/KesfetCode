@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, DIRECTIONS, initialState, step, simulate, scoreRun, missionTargetProgram, programBlockCount } from '../dist/engine.js';
-import { chapterMission } from '../dist/opening-missions.js';
+import { chapterMission, VIDEO_MAZES, videoMazeGrid, routeSteps } from '../dist/opening-missions.js';
 
 function histogram(grid) {
   return [...grid.join('')].filter(tile=>tile!=='#').reduce((counts,tile)=>({ ...counts, [tile]: (counts[tile]||0)+1 }),{});
@@ -44,7 +44,8 @@ for(const base of LEVELS) {
     assert.deepEqual(simulate(mission,reference),result.state);
     assert.equal(scoreRun(mission,result.state,programBlockCount(reference)),3);
     assert.equal(mission.solution.length,mission.target);
-    if(base.id>=5) {
+    // Missions 1–12 are the Code.org mazes (tested below); later ones keep the authored campaign.
+    if(base.id>=5&&!VIDEO_MAZES[base.id]) {
       assert.deepEqual(histogram(mission.grid),histogram(base.grid));
       assert.equal(mission.target,base.target);
       assert.deepEqual(result.history,trace(base).history);
@@ -64,6 +65,7 @@ for(const base of LEVELS) {
 
 test('Boards that already fit keep every corridor, branch, and pickup at the same relative position', () => {
   for(const base of LEVELS.slice(4)) {
+    if(VIDEO_MAZES[base.id])continue;
     const source=crop(base.grid);
     if(source.length>8||source[0].length>8)continue;
     const mission=chapterMission(base,0);
@@ -156,4 +158,28 @@ test('Older chapters and the original campaign remain untouched by every 8×8 ad
     }
   }
   assert.deepEqual(LEVELS,snapshot);
+});
+
+test('Explorer missions 1–12 are Code.org Lesson 4 puzzles 2–13, cell for cell and not re-centred', () => {
+  // Spot checks against the video: start, goal and route of each puzzle.
+  const expected = {
+    1: ['R2', [4, 2], [4, 4]], 4: ['R3', [3, 2], [3, 5]], 5: ['L1 D2', [2, 5], [4, 4]],
+    9: ['U1 R3 D1', [4, 2], [4, 5]], 10: ['L2 D2 R2 D1', [2, 5], [5, 5]], 12: ['D1 L2 U1 L1', [3, 5], [3, 2]]
+  };
+  for (const id of Object.keys(VIDEO_MAZES).map(Number)) {
+    const maze = VIDEO_MAZES[id], mission = chapterMission(LEVELS[id - 1], 0);
+    assert.deepEqual(mission.grid, videoMazeGrid(maze), `mission ${id} keeps the video's board position`);
+    assert.deepEqual(mission.solution, routeSteps(maze.route));
+    const result = simulate(mission, mission.solution);
+    assert.equal(result.won, true, `mission ${id}`);
+    assert.deepEqual([result.row, result.col], maze.goal);
+    // Every walkable cell is on the board, and nothing else is.
+    assert.equal(mission.grid.join('').replace(/#/g, '').length, maze.path.length + 2);
+    if (expected[id]) {
+      assert.equal(maze.route, expected[id][0]);
+      assert.deepEqual(maze.start, expected[id][1]);
+      assert.deepEqual(maze.goal, expected[id][2]);
+    }
+  }
+  assert.equal(Object.keys(VIDEO_MAZES).length, 12);
 });

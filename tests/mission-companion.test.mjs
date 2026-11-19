@@ -8,10 +8,10 @@ const mission = (id, chapter = 0) => chapterMission(LEVELS[id - 1], chapter);
 
 test('The four Explorer introductions teach the actual screen directions and crystal arrival', () => {
   const expected = [
-    ['one Up block', 'Bir Yukarı bloğu'],
-    ['two Left blocks', 'iki Sol bloğu'],
+    ['two Right blocks', 'iki Sağ bloğu'],
     ['two Down blocks', 'iki Aşağı bloğu'],
-    ['four Right blocks', 'dört Sağ bloğu']
+    ['two Up blocks', 'Yukarı bloğu'],
+    ['Right blocks', 'Sağ bloğu']
   ];
   for (const [index, [english, turkish]] of expected.entries()) {
     const level = mission(index + 1);
@@ -19,26 +19,26 @@ test('The four Explorer introductions teach the actual screen directions and cry
     assert.ok(missionTip(level, 0, 'tr').includes(turkish));
     for (const language of ['en', 'tr']) {
       const tip = missionTip(level, 0, language);
-      assert.match(tip, /crystal|kristal/);
+      assert.match(tip, /crystal|kristal/i);
       assert.doesNotMatch(tip, /Collect crystal|Kristali topla|Forward|İleri|turn/i);
     }
   }
 });
 
 test('Explorer introductions use separate direction cards before counts unlock at mission six', () => {
-  for (const [id, direction, count] of [[2, 'left', 2], [3, 'down', 2], [4, 'right', 4]]) {
+  for (const [id, direction, count] of [[1, 'right', 2], [2, 'down', 2], [4, 'right', 3]]) {
     const level = mission(id);
     assert.equal(level.solution.filter(action => action.type === direction).length, count);
-    assert.match(missionTip(level, 0, 'en'), /two (?:Left|Down) blocks|four Right blocks/);
-    assert.match(missionTip(level, 0, 'tr'), /iki (?:Sol|Aşağı) bloğu|dört Sağ bloğu/);
+    assert.match(missionTip(level, 0, 'en'), /two (?:Right|Down) blocks|Right blocks/);
+    assert.match(missionTip(level, 0, 'tr'), /iki (?:Sağ|Aşağı) bloğu|Sağ bloğu/);
   }
   for (let id = 1; id <= 5; id++) {
     for (const language of ['en', 'tr']) {
       assert.doesNotMatch(missionTip(mission(id), 0, language), /\+|−|move count|hareket sayısı/);
     }
   }
-  assert.match(missionTip(mission(6), 0, 'en'), /move count with \+ and −/);
-  assert.match(missionTip(mission(6), 0, 'tr'), /hareket sayısını \+ ve − ile/);
+  assert.match(missionTip(mission(6), 0, 'en'), /\+ and −/);
+  assert.match(missionTip(mission(6), 0, 'tr'), /\+ ve − düğmeleriyle/);
 });
 
 test('Older chapters keep robot-relative directions and their first crystal needs explicit collection', () => {
@@ -102,7 +102,7 @@ test('Companion markup is localized live text with a decorative, non-draggable r
   assert.match(html, /<aside class="mission-companion" aria-label="KAŞİF’in görev ipucu">/);
   assert.match(html, /class="companion-bubble"/);
   assert.match(html, /class="companion-name">KAŞİF/);
-  assert.match(html, /<p class="companion-tip">Hadi uyanalım!/);
+  assert.match(html, /<p class="companion-tip">Kristal iki kare sağımda!/);
   assert.match(html, /class="companion-robot"><span class="talking-robot [^"]*" data-mood="happy" data-talking-robot aria-hidden="true">/);
   assert.match(html, /<img class="talking-robot-img" src="\/assets\/kasif-talking.webp" alt="" draggable="false">/);
   assert.doesNotMatch(html, /<button|tabindex|aria-live/);

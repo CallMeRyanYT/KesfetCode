@@ -15,7 +15,8 @@ test('physical card count ignores direction repetitions and counts every loop ca
 });
 
 test('opening missions use one physical card per step until direction counts unlock at mission six', () => {
-  assert.deepEqual(LEVELS.slice(0, 6).map(base => missionBlockTarget(chapterMission(base, 0))), [1, 2, 2, 4, 8, 2]);
+  // Code.org puzzles 2–7: one card per tile until counts unlock at mission six.
+  assert.deepEqual(LEVELS.slice(0, 6).map(base => missionBlockTarget(chapterMission(base, 0))), [2, 2, 2, 3, 3, 2]);
   for (const base of LEVELS.slice(0, 5)) {
     const level = chapterMission(base, 0), reference = missionTargetProgram(level);
     assert.equal(directionCountsAvailable(level), false);

@@ -209,7 +209,9 @@ export class Classroom2D {
       element.style.top = `${(cell.row - this.layout.minRow) / this.layout.rows * 100}%`;
       const reference = usesReferenceArt(this.level);
       const originalTerrain = classroomTerrain(this.level.world || 1, cell);
-      const terrain = reference ? REFERENCE_PROP[originalTerrain] || originalTerrain : originalTerrain;
+      // Like the Code.org mazes, every wall cell carries an obstacle, so only the path looks open.
+      const filler = cell.blocked ? ['bush', 'rock', 'crate', 'tree'][(cell.row * 3 + cell.col * 5) % 4] : null;
+      const terrain = reference ? REFERENCE_PROP[originalTerrain] || originalTerrain || filler : originalTerrain;
       element.style.setProperty('--classroom-breeze-delay', `${-(cell.row * .37 + cell.col * .61).toFixed(2)}s`);
       const art = reference && ['tree', 'bush', 'rock', 'crate'].includes(terrain) ? `<img class="reference-prop" src="/assets/level-one-${terrain}.webp" alt="">` : terrainIcon(terrain);
       element.innerHTML = `<span class="classroom-turf" aria-hidden="true"></span>${cell.blocked ? (terrain ? `<span class="classroom-terrain-prop prop-${terrain}">${art}</span>` : '') : `<span class="classroom-flower flower-one">${flowerIcon}</span><span class="classroom-flower flower-two">${flowerIcon}</span>`}`;

@@ -5,6 +5,21 @@ import { Factory3D } from '../dist/factory3d.js';
 import { MOVE_MS, PICKUP_MS } from '../dist/robot-motion.js';
 import { LEVELS, initialState, step } from '../dist/engine.js';
 import { chapterMission } from '../dist/opening-missions.js';
+import { chapterOneBoard } from '../dist/chapter-one-boards.js';
+
+// The 3D showcase is exercised with the original opening layouts as fixed data.
+// (Explorer itself now plays the Code.org mazes on the 2D board.)
+const LEGACY_OPENINGS = {
+  1: { grid: ['#####', '##E##', '##S##', '#####', '#####'], heading: 'up', moves: 1 },
+  2: { grid: ['#####', '#####', '#E.S#', '#####', '#####'], heading: 'left', moves: 2 },
+  3: { grid: ['#####', '##S##', '##.##', '##E##', '#####'], heading: 'down', moves: 2 },
+  4: { grid: ['#######', '#S...E#', '#######'], heading: 'right', moves: 4 }
+};
+const legacyOpening = id => {
+  const route = LEGACY_OPENINGS[id];
+  return chapterOneBoard({ ...LEVELS[id - 1], robotRelative: false, allowTurns: false, curriculum: 0, crystals: [], grid: [...route.grid], heading: route.heading,
+    solution: Array.from({ length: route.moves }, () => ({ type: route.heading })), target: route.moves });
+};
 
 test('Changing chapters rebuilds the opening board; editing in the same chapter preserves it', () => {
   const view = Object.create(Factory3D.prototype), builds = [];
@@ -154,7 +169,7 @@ test('Opening boards share detailed grass tiles, with a centered three-tile rout
     host: { dataset: {}, clientWidth: 480, clientHeight: 400 },
     controls: { target: new THREE.Vector3(), update() {} }
   });
-  view.buildWorld(chapterMission(LEVELS[0], 0));
+  view.buildWorld(legacyOpening(1));
   const firstTiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
   assert.equal(firstTiles.length, 2);
   const firstTurfMaterial = firstTiles[0].children[2].material;
@@ -164,7 +179,7 @@ test('Opening boards share detailed grass tiles, with a centered three-tile rout
   assert.equal(view.showcaseCenter.z, 0);
   const firstWidth = view.boardWidth;
 
-  const mission = chapterMission(LEVELS[1], 0);
+  const mission = legacyOpening(2);
   view.buildWorld(mission); view.setState(initialState(mission), false); view.resetCamera(); view.resize();
   const secondTiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
   assert.equal(secondTiles.length, 3);
@@ -196,9 +211,9 @@ test('The three-tile opening retains the first mission scale and fits desktop an
   robot.position.y = .5; view.robotBody.add(robot); view.robot.add(view.robotBody);
   for (const [width, height] of [[1000, 288], [375, 360], [320, 360]]) {
     view.host.clientWidth = width; view.host.clientHeight = height;
-    view.buildWorld(chapterMission(LEVELS[0], 0)); view.resetCamera(); view.resize();
+    view.buildWorld(legacyOpening(1)); view.resetCamera(); view.resize();
     const firstTileScale = view.camera.zoom / view.camera.top;
-    const mission = chapterMission(LEVELS[1], 0);
+    const mission = legacyOpening(2);
     view.buildWorld(mission); view.setState(initialState(mission), false); view.resetCamera(); view.resize();
     const secondTileScale = view.camera.zoom / view.camera.top;
     assert.ok(Math.abs(secondTileScale / firstTileScale - 1) < .06);
@@ -224,11 +239,11 @@ test('The third and fourth openings reuse equal turf tiles with matching route g
   });
   const robot = new THREE.Mesh(new THREE.BoxGeometry(.6, 1, .6));
   robot.position.y = .5; view.robotBody.add(robot); view.robot.add(view.robotBody);
-  view.buildWorld(chapterMission(LEVELS[0], 0));
+  view.buildWorld(legacyOpening(1));
   const firstTile = view.world.children.find(child => child.name.startsWith('opening-tile-'));
   const soilGeometry = firstTile.children[0].geometry, turfMaterial = firstTile.children[2].material;
   for (const id of [3, 4]) {
-    const mission = chapterMission(LEVELS[id - 1], 0);
+    const mission = legacyOpening(id);
     view.buildWorld(mission);
     const tiles = view.world.children.filter(child => child.name.startsWith('opening-tile-'));
     assert.equal(tiles.length, id === 3 ? 3 : 5);

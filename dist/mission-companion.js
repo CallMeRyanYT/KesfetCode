@@ -121,26 +121,55 @@ const tips = {
   ]
 };
 
+// Explorer missions 1–12 follow the Code.org maze puzzles (see opening-missions.js).
 const openingTips = {
   1: [
-    'Let’s wake up! Place one Up block below Start, then press Start to help me reach the energy crystal above me.',
-    'Hadi uyanalım! Bir Yukarı bloğunu Başla bloğunun altına yerleştir. Sonra Başla’ya basıp beni üstümdeki enerji kristaline ulaştır!'
+    'The crystal is two tiles to my right! Place two Right blocks below Start, then press Start.',
+    'Kristal iki kare sağımda! Başla bloğunun altına iki Sağ bloğu yerleştir, sonra Başla’ya bas.'
   ],
   2: [
-    'The energy crystal is two tiles to the left! Place two Left blocks below Start, then press Start to bring me there.',
-    'Enerji kristali iki kare solda! Başla bloğunun altına iki Sol bloğu yerleştir. Sonra Başla’ya basıp beni kristale ulaştır.'
+    'Now the crystal is two tiles below me! Place two Down blocks below Start, then press Start.',
+    'Şimdi kristal iki kare altımda! Başla bloğunun altına iki Aşağı bloğu yerleştir, sonra Başla’ya bas.'
   ],
   3: [
-    'Look below me—the energy crystal is waiting! Place two Down blocks below Start, then press Start to guide me there.',
-    'Altıma bak, enerji kristali bizi bekliyor! Başla bloğunun altına iki Aşağı bloğu yerleştir. Sonra Başla’ya basıp beni kristale götür.'
+    'This time the crystal is two tiles above me! Use two Up blocks, then press Start.',
+    'Bu sefer kristal iki kare üstümde! İki Yukarı bloğu kullan, sonra Başla’ya bas.'
   ],
   4: [
-    'Let’s cross this longer path! Place four Right blocks below Start, then press Start to reach the energy crystal on the right.',
-    'Bu uzun yolu geçelim! Başla bloğunun altına dört Sağ bloğu yerleştir. Sonra Başla’ya basıp sağdaki enerji kristaline ulaş.'
+    'A longer path! Count the grass tiles to the crystal on my right, then add that many Right blocks.',
+    'Daha uzun bir yol! Sağımdaki kristale kadar çim karelerini say, sonra o kadar Sağ bloğu ekle.'
+  ],
+  5: [
+    'The path turns a corner! Go one tile left, then down to the goal.',
+    'Yol köşe dönüyor! Önce bir kare sola, sonra aşağı inerek hedefe git.'
   ],
   6: [
-    'Now you can change each direction block’s move count with + and −! Follow the grass path around the corner and help me reach the exit.',
-    'Artık yön bloklarının hareket sayısını + ve − ile değiştirebilirsin! Çim yolu izleyip köşeyi dön ve beni çıkışa ulaştır.'
+    'New power: use + and − on a block to move several tiles at once! Go right, then up to the goal.',
+    'Yeni güç: bir bloğun + ve − düğmeleriyle tek seferde birkaç kare ilerle! Önce sağa, sonra yukarı git.'
+  ],
+  7: [
+    'The path zigzags! Follow the grass one turn at a time to reach the goal.',
+    'Yol zikzak yapıyor! Çimleri her dönüşte izleyerek hedefe ulaş.'
+  ],
+  8: [
+    'Another zigzag! Watch where the grass changes direction.',
+    'Bir zikzak daha! Çimlerin nerede yön değiştirdiğine dikkat et.'
+  ],
+  9: [
+    'Something blocks the short way! Find the path that goes around it over the top.',
+    'Kısa yolu bir engel kapatıyor! Üstünden dolaşan yolu bul.'
+  ],
+  10: [
+    'A long winding path! Count the grass tiles in each direction before you build.',
+    'Uzun ve kıvrımlı bir yol! Kodlamadan önce her yöndeki çim karelerini say.'
+  ],
+  11: [
+    'Look for the way around the obstacle to reach the goal.',
+    'Hedefe ulaşmak için engelin etrafından dolaşan yolu ara.'
+  ],
+  12: [
+    'Something is in the way again! This time the path goes around it underneath.',
+    'Yine bir engel var! Bu sefer yol onun altından dolaşıyor.'
   ]
 };
 

@@ -11,9 +11,10 @@ const handMarkup = '<div class="tip-hand"><svg viewBox="0 0 72 82"><circle class
 
 export const isFirstMission = (chapter, missionId) => chapter === 0 && missionId === 1;
 
-export function guideStep({ chapter, missionId, blockCount, running, won, dismissed }) {
+// `target` is how many blocks the first mission needs; Start is suggested once all are placed.
+export function guideStep({ chapter, missionId, blockCount, running, won, dismissed, target = 1 }) {
   if (!isFirstMission(chapter, missionId) || running || won || dismissed) return null;
-  return blockCount > 0 ? 'run' : 'drag';
+  return blockCount >= Math.max(1, target) ? 'run' : 'drag';
 }
 
 export function guideMarkup(step, lang, direction = 'up') {
