@@ -106,12 +106,10 @@ function terrainIcon(kind) {
   return `<svg viewBox="0 0 100 100" fill="none" aria-hidden="true">${terrainProps[kind]}</svg>`;
 }
 
-// A painted-style finish flag marks the exit on the toy board.
-const finishFlag = `<svg class="reference-flag" viewBox="0 0 100 100" fill="none" aria-hidden="true"><ellipse cx="50" cy="88" rx="24" ry="6" fill="#2d6b12" opacity=".35"/><path d="M30 86q20-9 40 0v4q-20 7-40 0Z" fill="#9b6b3c" stroke="#6e4823" stroke-width="2"/><rect x="36" y="13" width="6" height="74" rx="3" fill="#c08a52" stroke="#6e4823" stroke-width="2"/><circle cx="39" cy="12" r="5" fill="#ffd34a" stroke="#a5700e" stroke-width="2"/><path class="reference-flag-cloth" d="M42 17q14-6 26 1t26-1v29q-13 6-26-1t-26 1Z" fill="#ff8a1f" stroke="#a84a0c" stroke-width="2.5" stroke-linejoin="round"/><path d="M55 22h10v10H55Zm10 10h10v10H65Zm-20 0h10v10H45Z" fill="#fff4dc" opacity=".9"/><path d="M45 21q8-3 15 0" stroke="#ffe0a8" stroke-width="2.5" stroke-linecap="round"/></svg>`;
 
 function markerIcon(tile, level) {
-  if (tile === 'C' || (tile === 'E' && level.id <= 4)) return crystalIcon;
-  if (tile === 'E' && usesReferenceArt(level)) return finishFlag;
+  // Every Explorer goal is an energy crystal (older chapters keep their exit sign).
+  if (tile === 'C' || (tile === 'E' && (level.id <= 4 || usesReferenceArt(level)))) return crystalIcon;
   const symbols = {
     E: '<rect x="17" y="18" width="66" height="66" rx="17" fill="#D8FAE6" stroke="#39A475" stroke-width="4"/><path d="M30 50h40m-13-13 13 13-13 13" stroke="#219367" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>',
     B: '<rect x="26" y="20" width="48" height="65" rx="12" fill="#B1ED70" stroke="#3B752E" stroke-width="5"/><path d="M42 20v-8h16v8m-4 15-14 24h14l-7 19" stroke="#3B752E" stroke-width="6" stroke-linejoin="round"/>',
@@ -218,7 +216,7 @@ export class Classroom2D {
       this.plane.append(element);
       if (!['.', 'S', '#'].includes(cell.tile)) {
         const marker = document.createElement('span');
-        marker.className = `classroom-marker marker-${cell.tile}${cell.tile === 'C' || (cell.tile === 'E' && this.level.id <= 4) ? ' classroom-crystal' : ''}`;
+        marker.className = `classroom-marker marker-${cell.tile}${cell.tile === 'C' || (cell.tile === 'E' && (this.level.id <= 4 || usesReferenceArt(this.level))) ? ' classroom-crystal' : ''}`;
         marker.style.setProperty('--classroom-crystal-delay', `${-((cell.row + cell.col) % 5) * .31}s`);
         marker.innerHTML = markerIcon(cell.tile, this.level);
         element.append(marker);

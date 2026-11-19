@@ -16,6 +16,7 @@ import { REACTIONS, SCENES, LINES, voicePath } from './story-script.js';
 import { CompanionVoice, tipVoicePath } from './companion-voice.js';
 import { startBlinking } from './talking-robot.js';
 import { Coach } from './coach.js';
+import { mountMapTravel, resetPositions } from './map-travel.js';
 let disposeIllustrations = () => {};
 let disposeGuide = () => {}, guideDismissed = false;
 let disposeRoad = () => {};
@@ -74,10 +75,14 @@ let pendingStory = null, pendingLine = null, storyPlaying = false;
 const companion = new CompanionVoice({ enabled: () => sound });
 // Shows what to tap next on the menus, the map and the success dialog.
 const coach = new Coach();
+let mapTraveling = false, disposeTravel = () => {};
 function updateCoach() {
   const dialog = document.querySelector('dialog[open]');
-  if (storyPlaying || document.querySelector('.story-stage')) { coach.hide(); return; }
+  if (storyPlaying || mapTraveling || document.querySelector('.story-stage')) { coach.hide(); return; }
   if (dialog) {
+    // After the very first mission, send the child to the map to watch KAŞİF walk on.
+    const home = dialog.querySelector('.success-home');
+    if (home && activeChapter === 0 && levelIndex === 0) return coach.show(home, text('Tap to see your map!', 'Haritanı görmek için dokun!'), 'home-after-first', { placement: 'below' });
     const next = dialog.querySelector('.success-next');
     if (next) coach.show(next, next.dataset.dialog === 'menu' ? text('Back to the map', 'Haritaya dön') : text('Tap to continue', 'Devam etmek için dokun'), 'continue', { placement: 'below' });
     else coach.hide();
@@ -248,6 +253,12 @@ function render({ preserveCanvas = true } = {}) {
   updateRunAvailability();
   if (canvasScroll) app.querySelector('.puzzle-canvas')?.scrollTo(canvasScroll);
   disposeGuide = mountFirstMissionGuide(app, firstDirection());
+  disposeTravel(); disposeTravel = () => {}; mapTraveling = false;
+  if (view === 'menu' && menuPage === 'map' && selectedChapter === 0) {
+    // KAŞİF walks to the next mission, greening finished ones; the tap hint waits for him.
+    mapTraveling = true;
+    disposeTravel = mountMapTravel(app, { chapter: 0, target: resumeLevel(0), reducedMotion: reducedRobotMotion, onDone: () => { mapTraveling = false; updateCoach(); } });
+  }
   queueMicrotask(updateCoach);
   disposePuzzle = mountPuzzleInteractions(app, {
     getWorkspace: () => puzzleWorkspace,
@@ -414,7 +425,7 @@ function runDemo() {
   else demoPending = true;
 }
 function closeDialog() { clearVictory(); const dialog = document.querySelector('dialog'); if (dialog) { dialog.close(); dialog.remove(); queueMicrotask(updateCoach); } if (dialogReturnFocus?.isConnected) dialogReturnFocus.focus({ preventScroll: true }); dialogReturnFocus = null; }
-function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) afterStory(closeDialog); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); resetSeen(); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } const scene = e.target.closest('[data-story-scene]')?.dataset.storyScene; if (scene) { closeDialog(); playStory(scene); return; } if (action === 'close') afterStory(closeDialog); if (action === 'next') afterStory(() => openLevel(levelIndex + 1)); if (action === 'menu') afterStory(openMenu); if (action === 'home') openHome(); if (action === 'again') afterStory(() => { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); }); }); dialog.addEventListener('cancel', e => { e.preventDefault(); afterStory(closeDialog); }); dialog.showModal(); updateCoach(); }
+function showDialog(content) { closeDialog(); dialogReturnFocus = document.activeElement; const dialog = document.createElement('dialog'); dialog.className = 'game-dialog'; dialog.innerHTML = content; const heading = dialog.querySelector('h2'); if (heading) { heading.id = 'dialog-title'; dialog.setAttribute('aria-labelledby', 'dialog-title'); } document.body.append(dialog); dialog.addEventListener('click', e => { if (e.target === dialog) afterStory(closeDialog); const action = e.target.closest('[data-dialog]')?.dataset.dialog; if (action === 'reset-progress') { progress = normalizeProgress(null); resetSeen(); resetPositions(); save('kesfet-code-progress-v2', progress); closeDialog(); render(); } const scene = e.target.closest('[data-story-scene]')?.dataset.storyScene; if (scene) { closeDialog(); playStory(scene); return; } if (action === 'close') afterStory(closeDialog); if (action === 'next') afterStory(() => openLevel(levelIndex + 1)); if (action === 'menu') afterStory(openMenu); if (action === 'home') openHome(); if (action === 'again') afterStory(() => { closeDialog(); assisted = false; resetRobot({ preserveProgram: true }); }); }); dialog.addEventListener('cancel', e => { e.preventDefault(); afterStory(closeDialog); }); dialog.showModal(); updateCoach(); }
 function showSuccess(score, previous = 0) {
   const final = levelIndex === chapterMissionCount(activeChapter) - 1;
   // Stars already earned on this mission stay marked as collected; only new ones are won again.
@@ -422,7 +433,11 @@ function showSuccess(score, previous = 0) {
   const starRow = [1, 2, 3].map(n => icon('star', n <= previous ? 'earned is-collected' : n <= score ? 'earned is-new' : '')).join('');
   const starNote = previous && !fresh ? text('You already collected these stars', 'Bu yıldızları zaten topladın')
     : previous ? text(`+${fresh} new star${fresh === 1 ? '' : 's'}!`, `+${fresh} yeni yıldız!`) : '';
-  showDialog(`<button class="success-home" data-dialog="menu" aria-label="${text('Back to mission map','Görev haritasına dön')}" title="${text('Back to mission map','Görev haritasına dön')}">${icon('home')}</button><div class="success-art">${icon(final ? 'rocket' : 'star')}<span>✦</span><span>✧</span></div><div class="success-stars" aria-label="${text(`${Math.max(score, previous)} of 3 stars`, `3 yıldızdan ${Math.max(score, previous)}`)}">${starRow}</div>${starNote ? `<p class="success-star-note${fresh ? ' is-new' : ''}">${starNote}</p>` : ''}<span class="eyebrow">${text('MISSION COMPLETE','GÖREV TAMAMLANDI')}</span><h2>${final && activeChapter !== 0 ? text('KEŞFET-1 is ready for space!','KEŞFET-1 uzaya hazır!') : final ? text('Chapter complete, explorer!','Bölüm tamamlandı, kâşif!') : text('Brilliant work, explorer','Harika iş, kâşif')}</h2><div class="success-controls"><button class="success-replay" data-dialog="again" aria-label="${text('Try again','Yeniden dene')}" title="${text('Try again','Yeniden dene')}">${icon('reset')}</button><button class="success-next" data-dialog="${final?'menu':'next'}" aria-label="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}" title="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}">${icon('arrow')}</button></div>`);
+  // Totals for the chapter: every finished mission's goal is one energy crystal.
+  const missionCount = chapterMissionCount(activeChapter), totalStars = progress.stars.slice(0, missionCount).reduce((sum, n) => sum + n, 0);
+  const gem = '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M20 2 36 16 20 46 4 16Z" fill="#7ff4ff" stroke="#1d9bb5" stroke-width="3" stroke-linejoin="round"/><path d="M4 16h32M20 2l-7 14 7 30 7-30Z" fill="none" stroke="#1d9bb5" stroke-width="2"/></svg>';
+  const totals = `<div class="success-totals" aria-label="${text(`${totalStars} of ${missionCount * 3} stars, ${completedCount(activeChapter)} of ${missionCount} crystals`, `${missionCount * 3} yıldızdan ${totalStars}, ${missionCount} kristalden ${completedCount(activeChapter)}`)}"><span class="success-total-stars">★ ${totalStars}<small>/${missionCount * 3}</small></span><span class="success-total-crystals">${gem}${completedCount(activeChapter)}<small>/${missionCount}</small></span></div>`;
+  showDialog(`${totals}<button class="success-home" data-dialog="menu" aria-label="${text('Back to mission map','Görev haritasına dön')}" title="${text('Back to mission map','Görev haritasına dön')}">${icon('home')}</button><div class="success-art">${icon(final ? 'rocket' : 'star')}<span>✦</span><span>✧</span></div><div class="success-stars" aria-label="${text(`${Math.max(score, previous)} of 3 stars`, `3 yıldızdan ${Math.max(score, previous)}`)}">${starRow}</div>${starNote ? `<p class="success-star-note${fresh ? ' is-new' : ''}">${starNote}</p>` : ''}<span class="eyebrow">${text('MISSION COMPLETE','GÖREV TAMAMLANDI')}</span><h2>${final && activeChapter !== 0 ? text('KEŞFET-1 is ready for space!','KEŞFET-1 uzaya hazır!') : final ? text('Chapter complete, explorer!','Bölüm tamamlandı, kâşif!') : text('Brilliant work, explorer','Harika iş, kâşif')}</h2><div class="success-controls"><button class="success-replay" data-dialog="again" aria-label="${text('Try again','Yeniden dene')}" title="${text('Try again','Yeniden dene')}">${icon('reset')}</button><button class="success-next" data-dialog="${final?'menu':'next'}" aria-label="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}" title="${final?text('Back to mission map','Görev haritasına dön'):text('Next mission','Sonraki görev')}">${icon('arrow')}</button></div>`);
   const stopConfetti = mountVictoryCelebration(document.querySelector('dialog[open]'), {
     reducedMotion: reducedRobotMotion
   });

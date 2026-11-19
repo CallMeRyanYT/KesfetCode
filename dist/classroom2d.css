@@ -119,8 +119,4 @@ html[data-theme=dark] .classroom-full-grid .classroom-goal{border-color:#31BFA8;
 /* Explorer boards share mission one's toy-board art. Walkable tiles glow a
    warmer sunlit lime so the route still reads at a glance between the props. */
 .classroom-reference-board.classroom-full-grid .classroom-route:not(.classroom-start):not(.classroom-goal){background:linear-gradient(145deg,#f1ff96,#cdee45 60%,#acd923);border-color:#86b915;box-shadow:inset 0 0 0 2px #fbffcf,inset 2px 2px 3px #ffffffb0,inset -2px -4px 3px #7ea51766,0 2px 2px #3e701c55}
-.classroom-reference-board .reference-flag{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 2px #2f5b2566)}
-.classroom-reference-board .reference-flag-cloth{transform-box:fill-box;transform-origin:0 50%}
-.classroom-reference-board[data-motion=on] .reference-flag-cloth{animation:reference-flag-wave 1.8s ease-in-out infinite}
-@keyframes reference-flag-wave{0%,100%{transform:skewY(0) scaleX(1)}50%{transform:skewY(-4deg) scaleX(.94)}}
 .classroom-reference-board .marker-E:not(.classroom-crystal){left:10%;top:-4%;width:80%;height:96%}

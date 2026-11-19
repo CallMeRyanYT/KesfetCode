@@ -222,12 +222,11 @@ test('Every Explorer mission uses the painted mission-one board, props, robot an
   assert.ok(crystal.element.className.includes('classroom-crystal'));
   assert.ok(crystal.element.innerHTML.includes('classroom-crystal-gem'));
   assert.ok(crystal.element.innerHTML.includes('classroom-crystal-shadow'));
-  assert.ok(!exit.element.className.includes('classroom-crystal'));
   const terrain = board.plane.children.filter(child => child.dataset.walkable === 'false');
   assert.ok(board.root.className.includes('classroom-reference-board'));
   assert.ok(terrain.some(tile => /level-one-(tree|bush|rock|crate)\.webp/.test(tile.innerHTML)));
   assert.ok(terrain.every(tile => !/classroom-tree-crown|prop-(post|planter)/.test(tile.innerHTML)));
-  assert.ok(exit.element.innerHTML.includes('reference-flag'));
+  assert.ok(exit.element.innerHTML.includes('classroom-crystal-gem'), 'Explorer goals are energy crystals');
   const path = board.plane.children.filter(child => child.dataset.walkable === 'true');
   assert.equal(path.length, 4);
   assert.ok(path.every(tile => !tile.innerHTML.includes('classroom-terrain-prop')));

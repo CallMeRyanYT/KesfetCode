@@ -33,6 +33,7 @@ export class Coach {
     this.target = target;
     if (this.key === key && this.layer.isConnected) { this.position(); return; }
     this.key = key;
+    this.layer.dataset.key = key;
     this.layer.querySelector('.coach-label').textContent = text;
     // Inside a modal dialog the hint must live in the dialog: it sits above the page.
     const host = target.closest('dialog[open]') || this.doc.body;

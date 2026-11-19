@@ -161,4 +161,12 @@ dialog .coach-layer{position:absolute}
 html[data-scenery-motion=off] .coach-layer *{animation:none!important}
 /* Room under the success buttons for the "Tap to continue" hint. */
 .game-dialog:has(> .coach-layer){overflow:visible}
-.game-dialog:has(> .coach-layer) .success-controls{margin-bottom:58px}
+.game-dialog:has(> .coach-layer[data-key=continue]) .success-controls{margin-bottom:58px}
+/* Chapter totals in the success popup's top-right corner. */
+.success-totals{position:absolute;top:16px;right:16px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font:800 18px/1 Outfit,system-ui,sans-serif}
+.success-totals span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#fff7e2;color:#9a6400;border:2px solid #ffd77a}
+.success-totals .success-total-crystals{background:#e7fbff;color:#13738a;border-color:#8fe6f5}
+.success-totals svg{width:16px;height:20px}
+.success-totals small{font-size:13px;opacity:.7;font-weight:700}
+html[data-theme=dark] .success-totals span{background:#3a2c0e;color:#ffd77a}
+html[data-theme=dark] .success-totals .success-total-crystals{background:#0f3442;color:#8fe6f5}

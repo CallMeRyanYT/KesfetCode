@@ -25,7 +25,7 @@ html[data-device=desktop] .fullscreen-toggle:not(.is-on){min-height:44px;font-si
   .mission-node,.mission-road-node,.space-button,.adventure-tools>button,.space-back{touch-action:manipulation}
 }
 /* Animated props get their own compositor layer, so sway and float never repaint the board. */
-.classroom-reference-board[data-motion=on] :is(.prop-bush,.reference-crystal-floating,.reference-flag-cloth),.classroom-board[data-motion=on] .classroom-crystal-gem{will-change:transform}
+.classroom-reference-board[data-motion=on] :is(.prop-bush,.reference-crystal-floating),.classroom-board[data-motion=on] .classroom-crystal-gem{will-change:transform}
 .journey-map{contain:layout paint}
 
 /* Tablet sizes: larger targets on the map and comfortable spacing. */
