@@ -16,8 +16,8 @@ test('Direction counts default to one and support only movement commands', () =>
   assert.equal(directionBlockCount({type:'collect'}), 1);
 });
 
-test('Chapter one unlocks direction counts in its mission-13 tutorial while older chapters keep them', () => {
-  for (let id = 1; id <= 12; id++) {
+test('Chapter one never uses direction counts while older chapters keep them', () => {
+  for (let id = 1; id <= 15; id++) {
     const level = chapterMission(LEVELS[id - 1], 0);
     assert.equal(directionCountsAvailable(level), false, `Chapter one mission ${id}`);
     assert.throws(() => expandProgram(level, [{type:'up', count:2}]), /invalid-block/);
@@ -25,9 +25,6 @@ test('Chapter one unlocks direction counts in its mission-13 tutorial while olde
     assert.equal(expandProgram(level, [{type:'up', count:1}]).length, 1);
     assert.equal(simulate(level, level.solution).won, true);
   }
-  const unlocked = chapterMission(LEVELS[12], 0);
-  assert.equal(directionCountsAvailable(unlocked), true);
-  assert.equal(expandProgram(unlocked, [{type:'up', count:2}]).length, 2);
   for (const chapter of [1, 2]) {
     const older = chapterMission(LEVELS[1], chapter);
     assert.equal(directionCountsAvailable(older), true);

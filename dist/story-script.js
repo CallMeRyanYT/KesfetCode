@@ -62,12 +62,6 @@ export const LINES = {
   'f-3': { who: 'nova', en: 'Three… two… one…', tr: 'Üç… iki… bir…' },
   'f-4': { who: 'kasif', mood: 'happy', act: 'celebrate', en: 'Liftoff! See you on the next adventure, teacher!', tr: 'Kalkış! Bir sonraki macerada görüşürüz öğretmenim!' },
 
-  // Mission 13: the step-by-step lesson for repeating a move with + and −.
-  'count-add': { who: 'kasif', mood: 'happy', act: 'nod', en: 'First, tap the Right block to put it under Start.', tr: 'Önce Sağ bloğuna dokunup Başla’nın altına koy.' },
-  'count-plus': { who: 'kasif', mood: 'surprised', act: 'hop', en: 'Now tap the plus button. Each tap adds one more step. Count the footprints with me!', tr: 'Şimdi artı düğmesine dokun. Her dokunuş bir adım ekler. Ayak izlerini benimle say!' },
-  'count-start': { who: 'kasif', mood: 'happy', act: 'celebrate', en: 'Five steps with just one block! Now press Start.', tr: 'Tek blokla beş adım! Şimdi Başla’ya bas.' },
-  'count-minus': { who: 'kasif', mood: 'surprised', act: 'wiggle', en: 'Oops, that is too far! Tap minus to take one step back.', tr: 'Hop, bu çok uzak! Bir adım geri almak için eksiye dokun.' },
-  'count-one': { who: 'kasif', mood: 'thinking', act: 'lean', en: 'We only need one Right block. Drag the extra blocks to the trash.', tr: 'Sadece bir Sağ bloğu yeterli. Fazla blokları çöpe sürükle.' },
 
   // Short reactions while a program runs.
   'react-run': { who: 'kasif', mood: 'happy', en: 'Here I go!', tr: 'İşte gidiyorum!' },

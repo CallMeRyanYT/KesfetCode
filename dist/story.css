@@ -183,22 +183,6 @@ html[data-theme=dark] .success-totals .success-total-crystals{background:#0f3442
 .classroom-tile .footstep.is-bump::before{content:none}
 @keyframes footstep-pop{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
 /* Many arrows = one arrow ×5, animated so the idea is seen, not read. */
-.count-lesson{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 10px 0;padding:10px 12px;border-radius:14px;background:#eaf8ff;border:2px dashed #7cc8ff;color:#0b5c78}
-.count-lesson b{font-size:24px}
-.count-lesson-many,.count-lesson-one{display:flex;gap:3px}
-.count-lesson span{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:linear-gradient(#22c3d6,#0a97b0);color:#fff;font:900 18px/1 system-ui,sans-serif;box-shadow:0 3px 0 #06708a}
-.count-lesson-one{align-items:center;gap:6px}
-.count-lesson-one span{width:34px;height:34px}
-.count-lesson-one em{font:900 20px/1 Outfit,system-ui,sans-serif;font-style:normal;color:#c45a00}
-html[data-scenery-motion=on] .count-lesson-many span{animation:count-merge 3.2s ease-in-out infinite}
-html[data-scenery-motion=on] .count-lesson-many span:nth-child(2){animation-delay:.1s}
-html[data-scenery-motion=on] .count-lesson-many span:nth-child(3){animation-delay:.2s}
-html[data-scenery-motion=on] .count-lesson-many span:nth-child(4){animation-delay:.3s}
-html[data-scenery-motion=on] .count-lesson-many span:nth-child(5){animation-delay:.4s}
-html[data-scenery-motion=on] .count-lesson-one{animation:count-appear 3.2s ease-in-out infinite}
-@keyframes count-merge{0%,25%{transform:none;opacity:1}55%,80%{transform:translateX(18px) scale(.6);opacity:.25}100%{transform:none;opacity:1}}
-@keyframes count-appear{0%,40%{transform:scale(1)}55%{transform:scale(1.25)}70%,100%{transform:scale(1)}}
-html[data-theme=dark] .count-lesson{background:#123a52;color:#cfefff}
 
 /* ---------- Dizzy KAŞİF (after a bump) ---------- */
 .tr-eye-dizzy{opacity:0;transform-box:fill-box;transform-origin:50% 50%}

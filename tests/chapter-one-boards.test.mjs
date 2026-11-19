@@ -184,14 +184,13 @@ test('Explorer missions 1–12 are Code.org Lesson 4 puzzles 2–13, cell for ce
   assert.equal(Object.keys(VIDEO_MAZES).length, 12);
 });
 
-test('Missions 13–15 teach and then use + and −: one tutorial run, then two harder mazes', () => {
-  const tutorial = chapterMission(LEVELS[12], 0);
-  assert.deepEqual(missionTargetProgram(tutorial), [{ type: 'right', count: 5 }], 'one Right block ×5');
-  assert.equal(COUNT_MAZES[13].tutorial, true);
+test('Missions 13–15 are longer mazes built one block per step', () => {
+  const long = chapterMission(LEVELS[12], 0);
+  assert.equal(missionTargetProgram(long).length, 5, 'five Right blocks');
   for (const id of [14, 15]) {
     const mission = chapterMission(LEVELS[id - 1], 0);
     assert.equal(simulate(mission, mission.solution).won, true);
-    assert.ok(missionTargetProgram(mission).every(block => block.count >= 2), `mission ${id} repeats every move`);
+    assert.ok(missionTargetProgram(mission).every(block => (block.count ?? 1) === 1), `mission ${id} uses one block per step`);
     // A dead-end tile tempts one step too many.
     const overshoot = routeSteps(COUNT_MAZES[id].route.replace(/\d+/, n => String(Number(n) + 1)));
     assert.equal(simulate(mission, overshoot).won, false, `mission ${id} punishes one step too many`);

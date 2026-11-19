@@ -1,5 +1,5 @@
 import { chapterMissionCount } from './chapter-config.js';
-import { chapterMission, isOpeningMission, isCountTutorial } from './opening-missions.js';
+import { chapterMission, isOpeningMission } from './opening-missions.js';
 import { isFirstMission, guideStep, guideMarkup, mountFirstMissionGuide } from './first-mission-guide.js';
 import { brandMarkup } from './brand.js';
 import { missionCompanionMarkup, missionTip } from './mission-companion.js';
@@ -76,21 +76,6 @@ const companion = new CompanionVoice({ enabled: () => sound });
 // Shows what to tap next on the menus, the map and the success dialog.
 const coach = new Coach();
 let mapTraveling = false, disposeTravel = () => {};
-// Mission 13 teaches + and − step by step: what to tap, what KAŞİF says, and
-// numbered footprints showing every step the block will take.
-let tutorialSpoken = null;
-const countTutorial = () => view === 'game' && isCountTutorial(activeChapter, level().id);
-function countTutorialStep() {
-  if (!countTutorial() || running || state.won) return null;
-  const goal = level().solution.length;
-  if (!program.length) return { step: 'add', goal };
-  const first = program[0], count = directionBlockCount(first);
-  if (program.length > 1 || first.type !== level().solution[0].type) return { step: 'one', goal };
-  if (count < goal) return { step: 'plus', count, goal };
-  if (count > goal) return { step: 'minus', count, goal };
-  return { step: 'start', count, goal };
-}
-const TUTORIAL_LINES = { add: 'count-add', plus: 'count-plus', start: 'count-start', minus: 'count-minus', one: 'count-one' };
 // Route preview on every Explorer mission: one pointy arrow per step, numbered,
 // one colour per run in the same direction (Right ×3 is one colour, then Down ×4
 // another), and a red ✖ where KAŞİF would bump.
@@ -99,8 +84,8 @@ const STEP = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] };
 function paintFootprints() {
   const board = app.querySelector('.classroom-board');
   board?.querySelectorAll('.footstep').forEach(mark => mark.remove());
-  // Only where a new idea is introduced: the first mission and the + and − tutorial.
-  if (!board || !(firstMission() || countTutorial()) || running || state.won || !program.length) return;
+  // Only where a new idea is introduced: the first mission.
+  if (!board || !firstMission() || running || state.won || !program.length) return;
   let actions;
   try { actions = expandProgram(level(), program, 1); } catch { return; }
   const tileAt = (row, col) => board.querySelector(`.classroom-tile[data-cell="${row},${col}"]`);
@@ -129,19 +114,6 @@ function paintFootprints() {
     if (sim.won) break;
   }
 }
-function updateCountTutorial() {
-  paintFootprints();
-  const lesson = countTutorialStep();
-  if (!lesson || lesson.step === tutorialSpoken) return;
-  tutorialSpoken = lesson.step;
-  companion.say([spoken(TUTORIAL_LINES[lesson.step])]);
-}
-function countLessonMarkup() {
-  if (!countTutorial()) return '';
-  const goal = level().solution.length;
-  // Five single arrows slide together into one arrow block with ×5.
-  return `<div class="count-lesson" aria-hidden="true"><div class="count-lesson-many">${'<span>→</span>'.repeat(goal)}</div><b>=</b><div class="count-lesson-one"><span>→</span><em>×${goal}</em></div></div>`;
-}
 function updateCoach() {
   const dialog = document.querySelector('dialog[open]');
   if (storyPlaying || mapTraveling || document.querySelector('.story-stage')) { coach.hide(); return; }
@@ -154,18 +126,7 @@ function updateCoach() {
     else coach.hide();
     return;
   }
-  if (view !== 'menu') {
-    const lesson = countTutorialStep();
-    const targets = {
-      add: ['.palette-block.right', text('Tap Right', 'Sağ’a dokun')],
-      plus: ['[data-direction-count="0:1"]', text(`Tap + (${lesson?.count}/${lesson?.goal})`, `+’ya dokun (${lesson?.count}/${lesson?.goal})`)],
-      minus: ['[data-direction-count="0:-1"]', text('Tap −', '−’ye dokun')],
-      start: ['.puzzle-start', text('Press Start!', 'Başla’ya bas!')]
-    }[lesson?.step];
-    if (targets) coach.show(app.querySelector(targets[0]), targets[1], `count-${lesson.step}-${lesson.count ?? 0}`);
-    else coach.hide();
-    return;
-  }
+  if (view !== 'menu') { coach.hide(); return; }
   const fresh = completedCount(0) === 0;
   if (menuPage === 'home' && fresh) return coach.show(app.querySelector('.start-adventure'), text('Tap PLAY!', 'OYUNA BAŞLA’ya dokun!'), 'home');
   if (menuPage === 'chapters' && fresh) return coach.show(app.querySelector('[data-action="choose-path"][data-path="0"]'), text('Start here!', 'Buradan başla!'), 'chapters');
@@ -189,7 +150,6 @@ function speakMissionOpening() {
   }
   const tip = missionTip(level(), activeChapter, lang);
   entries.push({ text: tip, src: tipVoicePath(tip, lang), mood: 'happy' });
-  if (countTutorial()) entries.push(spoken('count-add'));
   companion.say(entries);
 }
 async function playStory(id) {
@@ -288,7 +248,7 @@ function workspace() {
   const stacks = puzzleStacks(puzzleWorkspace), { x, y, height, width, startHeight } = PUZZLE_GEOMETRY;
   const planeHeight = Math.max(360, ...stacks.map(stack => stack.y + (stack.blocks.length + 1) * height));
   const planeWidth = Math.max(340, ...stacks.map(stack => stack.x + width + 30));
-  return `<section class="puzzle-editor" aria-labelledby="program-title"><div class="puzzle-heading"><h2 id="program-title">${text('PROGRAM', 'PROGRAM')}</h2>${programBudgetMarkup()}</div>${guideMarkup(currentGuideStep(), lang, firstDirection())}${countLessonMarkup()}<div class="puzzle-body">${toolbox()}<div class="puzzle-canvas program-scroll" id="program-area" data-mission="${activeChapter}:${level().id}" role="region" aria-label="${text('Puzzle programming workspace. Connect blocks below Start to run them.', 'Bulmaca kodlama alanı. Çalıştırmak için blokları Başla altına bağla.')}" tabindex="0"><div class="puzzle-plane" style="min-width:${planeWidth}px;min-height:max(100%,${planeHeight}px)"><button class="puzzle-start start-block" style="left:${x}px;top:${y}px" data-connector="start" data-action="${running ? 'stop' : 'run'}" aria-label="${text(running ? 'Stop program' : 'Start program', running ? 'Programı durdur' : 'Programı başlat')}">${icon(running ? 'pause' : 'play')}<span>${text(running ? 'Stop' : 'Start', running ? 'Durdur' : 'Başla')}</span><span class="puzzle-fixed" aria-hidden="true">⌖</span></button>${stacks.map(stack => `<div class="puzzle-stack ${stack.id === CONNECTED_STACK ? 'puzzle-connected' : 'puzzle-detached'}" data-stack-id="${stack.id}" style="left:${stack.x}px;top:${stack.y}px" role="list" aria-label="${text(stack.id === CONNECTED_STACK ? 'Connected program' : 'Detached blocks, not run', stack.id === CONNECTED_STACK ? 'Bağlı program' : 'Ayrı bloklar, çalıştırılmaz')}">${stack.id !== CONNECTED_STACK ? `<button class="puzzle-connect" data-connect="${stack.id}" aria-label="${text('Connect this stack below Start', 'Bu grubu Başla altına bağla')}" title="${text('Connect to program', 'Programa bağla')}" ${disabled()}>↗</button>` : ''}${renderPuzzleCards(stack.blocks, stack.id)}</div>`).join('')}${!program.length ? `<div class="first-block-slot puzzle-empty-slot" style="left:${x}px;top:${y + startHeight}px" aria-hidden="true">${text('Snap a block here', 'Bir bloğu buraya bağla')}</div>` : ''}<span class="puzzle-canvas-note">${text('Only blocks joined to Start will run.', 'Yalnızca Başla’ya bağlı bloklar çalışır.')}</span></div></div></div></section>`;
+  return `<section class="puzzle-editor" aria-labelledby="program-title"><div class="puzzle-heading"><h2 id="program-title">${text('PROGRAM', 'PROGRAM')}</h2>${programBudgetMarkup()}</div>${guideMarkup(currentGuideStep(), lang, firstDirection())}<div class="puzzle-body">${toolbox()}<div class="puzzle-canvas program-scroll" id="program-area" data-mission="${activeChapter}:${level().id}" role="region" aria-label="${text('Puzzle programming workspace. Connect blocks below Start to run them.', 'Bulmaca kodlama alanı. Çalıştırmak için blokları Başla altına bağla.')}" tabindex="0"><div class="puzzle-plane" style="min-width:${planeWidth}px;min-height:max(100%,${planeHeight}px)"><button class="puzzle-start start-block" style="left:${x}px;top:${y}px" data-connector="start" data-action="${running ? 'stop' : 'run'}" aria-label="${text(running ? 'Stop program' : 'Start program', running ? 'Programı durdur' : 'Programı başlat')}">${icon(running ? 'pause' : 'play')}<span>${text(running ? 'Stop' : 'Start', running ? 'Durdur' : 'Başla')}</span><span class="puzzle-fixed" aria-hidden="true">⌖</span></button>${stacks.map(stack => `<div class="puzzle-stack ${stack.id === CONNECTED_STACK ? 'puzzle-connected' : 'puzzle-detached'}" data-stack-id="${stack.id}" style="left:${stack.x}px;top:${stack.y}px" role="list" aria-label="${text(stack.id === CONNECTED_STACK ? 'Connected program' : 'Detached blocks, not run', stack.id === CONNECTED_STACK ? 'Bağlı program' : 'Ayrı bloklar, çalıştırılmaz')}">${stack.id !== CONNECTED_STACK ? `<button class="puzzle-connect" data-connect="${stack.id}" aria-label="${text('Connect this stack below Start', 'Bu grubu Başla altına bağla')}" title="${text('Connect to program', 'Programa bağla')}" ${disabled()}>↗</button>` : ''}${renderPuzzleCards(stack.blocks, stack.id)}</div>`).join('')}${!program.length ? `<div class="first-block-slot puzzle-empty-slot" style="left:${x}px;top:${y + startHeight}px" aria-hidden="true">${text('Snap a block here', 'Bir bloğu buraya bağla')}</div>` : ''}<span class="puzzle-canvas-note">${text('Only blocks joined to Start will run.', 'Yalnızca Başla’ya bağlı bloklar çalışır.')}</span></div></div></div></section>`;
 }
 function objectiveHud() { const crystals = state.crystals?.length || 0; const required = level().crystals?.length ?? level().grid.flatMap(row => [...row]).filter(tile => tile === 'C').length; const fragments = state.items?.length || 0; return `<div class="mission-hud">${required ? `<span class="hud-chip">💎 ${crystals} / ${required}</span>` : ''}${level().world >= 5 ? `<span class="hud-chip">🔑 ${(state.keys || []).length}</span>` : ''}${level().world >= 6 ? `<span class="hud-chip">🛰️ ${fragments}</span>` : ''}</div>`; }
 function boardHTML() { return `<div class="scene-wrap">${sceneHTML()}<div class="scene-topline">${objectiveHud()}</div><div class="scene-bottomline"><span>${text('Drag to look around', 'Etrafa bakmak için sürükle')}</span>${cameraTools()}</div></div>`; }
@@ -338,7 +298,7 @@ function render({ preserveCanvas = true } = {}) {
     disposeTravel = mountMapTravel(app, { chapter: 0, target: resumeLevel(0), reducedMotion: reducedRobotMotion, onDone: () => { mapTraveling = false; updateCoach(); } });
   }
   queueMicrotask(updateCoach);
-  queueMicrotask(updateCountTutorial);
+  queueMicrotask(paintFootprints);
   disposePuzzle = mountPuzzleInteractions(app, {
     getWorkspace: () => puzzleWorkspace,
     enabled: () => !running,
@@ -369,7 +329,7 @@ function updateBoard(animate = false, direction) {
   if (hud && view === 'game') hud.querySelector('.mission-hud')?.replaceWith(document.createRange().createContextualFragment(objectiveHud()));
 }
 function cancelRun() { clearVictory(); runId++; running = false; demoPending = false; activeBlock = -1; stepCursor = 0; audio.cancel(); activeBoard().cancelAnimation?.(state); }
-function openLevel(index, chapter = activeChapter) { if (!Number.isInteger(index) || index < 0 || index >= chapterMissionCount(chapter) || !canOpenLevel(index)) return; cancelRun(); closeDialog(); view = 'game'; levelIndex = index; activeChapter = chapter; guideDismissed = false; tutorialSpoken = 'add'; resetPuzzle(); repeatCount = 1; state = initialState(level()); hintOpen = false; assisted = false; feedback = 'ready'; render({ preserveCanvas: false }); window.scrollTo({ top: 0, behavior: 'instant' }); setTimeout(speakMissionOpening, 500); }
+function openLevel(index, chapter = activeChapter) { if (!Number.isInteger(index) || index < 0 || index >= chapterMissionCount(chapter) || !canOpenLevel(index)) return; cancelRun(); closeDialog(); view = 'game'; levelIndex = index; activeChapter = chapter; guideDismissed = false; resetPuzzle(); repeatCount = 1; state = initialState(level()); hintOpen = false; assisted = false; feedback = 'ready'; render({ preserveCanvas: false }); window.scrollTo({ top: 0, behavior: 'instant' }); setTimeout(speakMissionOpening, 500); }
 function openAdventureMap(chapter = activeChapter, world = Math.floor(levelIndex / 5)) {
   companion.stop(); cancelRun(); closeDialog(); selectedChapter = activeChapter = chapter; mapWorld = world;
   menuPage = 'map'; view = 'menu'; render();
@@ -487,7 +447,7 @@ function showOpeningMissionHelp() {
   const secondHeading = counted ? text('Choose how many steps', 'Adım sayısını seç') : text('Connect one block for each step', 'Her adım için bir blok bağla');
   const secondMessage = counted
     ? text('Arrows match your screen. Use + and − on each direction block to choose how many tiles KAŞİF should move. The robot stays facing you.', 'Oklar ekrana göredir. Her yön bloğundaki + ve − ile KAŞİF’in kaç kare ilerleyeceğini seç. Robot sana bakmaya devam eder.')
-    : text('Arrows match your screen. Each block moves KAŞİF one tile. Snap more blocks below one another to build the route. The + and − controls unlock in mission 13.', 'Oklar ekrana göredir. Her blok KAŞİF’i bir kare ilerletir. Rotayı oluşturmak için blokları alt alta birleştir. + ve − kontrolleri 13. görevde açılır.');
+    : text('Arrows match your screen. Each block moves KAŞİF one tile. Snap more blocks below one another to build the route.', 'Oklar ekrana göredir. Her blok KAŞİF’i bir kare ilerletir. Rotayı oluşturmak için blokları alt alta birleştir.');
   showDialog(`<button class="dialog-close icon-button" data-dialog="close" aria-label="${text('Close', 'Kapat')}">${icon('close')}</button><span class="eyebrow">KEŞFET LAB</span><h2>${text('Follow the path', 'Yolu takip et')}</h2><div class="help-step"><span class="step-badge">1</span><div><h3>${text('Choose a direction', 'Bir yön seç')}</h3><p>${text('Drag an arrow block below Start and snap it into place, or click it to add it. Only the blocks connected to Start will run.', 'Bir ok bloğunu Başla altına sürükleyip birleştir veya eklemek için bloğa tıkla. Yalnızca Başla’ya bağlı bloklar çalışır.')}</p></div></div><div class="help-step"><span class="step-badge">2</span><div><h3>${secondHeading}</h3><p>${secondMessage} ${esc(missionObjective(level()))}</p></div></div><div class="help-step"><span class="step-badge">3</span><div><h3>${text('Press Start', 'Başla bloğuna bas')}</h3><p>${text('Press the yellow Start block to run your connected program and reach the goal.', 'Bağlı programını çalıştırıp hedefe ulaşmak için sarı Başla bloğuna bas.')}</p></div></div><button class="primary dialog-primary" data-dialog="close">${text('Let’s build', 'Haydi kodlayalım')}${icon('arrow')}</button>`);
 }
 function showFirstMissionGuide() {

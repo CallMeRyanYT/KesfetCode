@@ -6,8 +6,6 @@ export const ROTATION_ACTIONS = ['forward', 'turnRight', 'turnLeft'];
 export const MAX_BLOCKS = 80;
 export const MAX_REPEATS = 10;
 export const MAX_DIRECTION_COUNT = 10;
-/** The Explorer mission whose tutorial introduces repeating a move with + and −. */
-export const COUNT_UNLOCK_MISSION = 13;
 export const PROGRESS_VERSION = 2;
 const vectors = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] };
 const itemTiles = ['P', 'a', 'b', 'c'];
@@ -54,8 +52,8 @@ export function isDirectionBlock(type) {
 }
 
 export function directionCountsAvailable(level) {
-  // Explorer teaches the multi-step (+/−) control in its own tutorial mission.
-  return !(level.curriculum === 0 && level.id < COUNT_UNLOCK_MISSION);
+  // Explorer (the youngest path) always uses one block per step: no + and −.
+  return level.curriculum !== 0;
 }
 
 export function directionBlockCount(block) {

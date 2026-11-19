@@ -25,21 +25,18 @@ test('The four Explorer introductions teach the actual screen directions and cry
   }
 });
 
-test('Explorer introductions use separate direction cards until the + and − tutorial', () => {
+test('Explorer always uses separate direction cards, one per step', () => {
   for (const [id, direction, count] of [[1, 'right', 2], [2, 'down', 2], [4, 'right', 3]]) {
     const level = mission(id);
     assert.equal(level.solution.filter(action => action.type === direction).length, count);
     assert.match(missionTip(level, 0, 'en'), /two (?:Right|Down) blocks|Right blocks/);
     assert.match(missionTip(level, 0, 'tr'), /iki (?:Sağ|Aşağı) bloğu|Sağ bloğu/);
   }
-  for (let id = 1; id <= 12; id++) {
+  for (let id = 1; id <= 15; id++) {
     for (const language of ['en', 'tr']) {
       assert.doesNotMatch(missionTip(mission(id), 0, language), /\+|−|move count|hareket sayısı/);
     }
   }
-  assert.match(missionTip(mission(13), 0, 'en'), /one block can take many steps/);
-  assert.match(missionTip(mission(14), 0, 'en'), /\+ and −/);
-  assert.match(missionTip(mission(14), 0, 'tr'), /\+ ve −/);
 });
 
 test('Older chapters keep robot-relative directions and their first crystal needs explicit collection', () => {

@@ -172,12 +172,12 @@ const openingTips = {
     'Yine bir engel var! Bu sefer yol onun altından dolaşıyor.'
   ],
   13: [
-    'Wow, this path is long! Let me show you a new trick: one block can take many steps.',
-    'Vay, bu yol çok uzun! Sana yeni bir numara göstereyim: tek bir blok birçok adım atabilir.'
+    'Wow, this path is long! Count the grass tiles and add one Right block for each one.',
+    'Vay, bu yol çok uzun! Çim karelerini say ve her biri için bir Sağ bloğu ekle.'
   ],
   14: [
-    'Use + and − to make each block go the right distance. Watch out for the extra tile at the corner!',
-    'Her bloğun mesafesini + ve − ile ayarla. Köşedeki fazla kareye dikkat et!'
+    'Count the tiles in each direction, one block per step. Watch out for the extra tile at the corner!',
+    'Her yöndeki kareleri say, her adım için bir blok. Köşedeki fazla kareye dikkat et!'
   ],
   15: [
     'The rocket is waiting! Count the steps in each direction, and do not go up too far.',
